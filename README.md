@@ -1,5 +1,7 @@
 # starry_prompt_compiler
 
+**English** · [简体中文](README.zh-CN.md)
+
 > Pure-Dart prompt compiler extracted from Starry — deterministically compiles
 > character-chat context into a ready-to-send message sequence.
 
