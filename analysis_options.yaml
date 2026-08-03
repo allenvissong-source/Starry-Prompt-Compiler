@@ -1,0 +1,42 @@
+# starry_prompt_compiler - Analysis Options
+# Pure Dart package. NOT Flutter. Enforce host-agnostic constraints.
+
+include: package:lints/recommended.yaml
+
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+    - "build/**"
+  errors:
+    todo: ignore
+    deprecated_member_use_from_same_package: warning
+    depend_on_referenced_packages: error
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+
+linter:
+  rules:
+    - avoid_print
+    - avoid_relative_lib_imports
+    - always_declare_return_types
+    - annotate_overrides
+    - avoid_init_to_null
+    - avoid_null_checks_in_equality_operators
+    - avoid_return_types_on_setters
+    - avoid_returning_null_for_void
+    - avoid_shadowing_type_parameters
+    - avoid_types_on_closure_parameters
+    - await_only_futures
+    - camel_case_extensions
+    - camel_case_types
+    - constant_identifier_names
+    - file_names
+    - library_names
+    - library_prefixes
+    - non_constant_identifier_names
+    - package_names
+    - prefer_final_fields
+    - prefer_final_locals
+    - prefer_single_quotes

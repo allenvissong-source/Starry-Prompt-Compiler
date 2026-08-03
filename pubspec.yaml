@@ -1,0 +1,20 @@
+name: starry_prompt_compiler
+description: >-
+  Pure Dart prompt compiler extracted from Starry.
+  Host-agnostic: no Flutter, no Riverpod, no I/O, no DB.
+  Contains the three-step assembly seam
+  (buildPlan -> admitWorldInfoUnits -> buildFromExecutionPlan)
+  plus MacroService / RegexService / WorldInfoMatcher.
+version: 0.1.0-dev
+publish_to: none
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+  intl: ^0.20.2
+  meta: ^1.15.0
+
+dev_dependencies:
+  lints: ^5.1.1
+  test: ^1.25.0
