@@ -2,7 +2,7 @@ import 'package:starry_prompt_compiler/starry_prompt_compiler.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('VariableEngine + InMemoryVariableStore (D-2 parity)', () {
+  group('VariableEngine + InMemoryVariableStore parity', () {
     late InMemoryVariableStore store;
     late VariableEngine engine;
 

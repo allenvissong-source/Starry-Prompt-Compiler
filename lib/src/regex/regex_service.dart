@@ -14,7 +14,7 @@
 //   * Singleton (`RegexService._()` + `static final instance = ...`) is
 //     removed. The pure package exposes a normal constructor so callers can
 //     inject a [Logger] and so tests do not have to share state through a
-//     global. The Starry-side singleton stays (Block D wires the host to a
+//     global. The Starry-side singleton stays (the host wires it to a
 //     process-scoped instance).
 //   * Explicitly **not copied** (Host / UI concerns, and the only remaining
 //     `DateTime.now()` call sites in the source):

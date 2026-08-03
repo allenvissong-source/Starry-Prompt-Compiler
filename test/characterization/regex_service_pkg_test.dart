@@ -1,4 +1,4 @@
-// Characterization tests for RegexService (Block A behavior baseline),
+// Characterization tests for RegexService (behavior baseline),
 // extracted from the main-project dual-SUT test into a pure-Dart, in-package
 // test. Source of truth:
 //   test/features/prompt_compiler/regex_service_characterization_test.dart

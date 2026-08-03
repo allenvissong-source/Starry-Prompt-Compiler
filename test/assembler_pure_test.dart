@@ -1,8 +1,8 @@
-// Package-internal test for CharacterMessageAssemblerPure (Block C-9).
+// Package-internal test for CharacterMessageAssemblerPure.
 //
 // This is NOT the behavior-parity test — that lives on the Starry side and
 // runs the pure assembler under `SUT=package` against the 22 behavior_v1
-// goldens (see C-10). This file only asserts the package-local contract:
+// goldens. This file only asserts the package-local contract:
 //   1. buildFromExecutionPlan compiles and returns a
 //      CharacterTurnAssemblyResult without throwing when given a minimal
 //      plan and history.

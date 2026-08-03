@@ -1,4 +1,4 @@
-// Block C-3.3: hand-written pure-Dart Persona subset for the compiler package.
+// Hand-written pure-Dart Persona subset for the compiler package.
 //
 // The Starry-side `lib/features/persona/data/models/persona.dart` uses freezed
 // + json_serializable so it can be persisted and diffed by the host. The
@@ -18,7 +18,7 @@
 //   * PersonaDescriptionPosition (all 6 variants)
 //
 // The Starry-side Persona has additional fields (avatar, connections, tags,
-// createdAt, isDefault, ...) that this package never consumes. Block D will
+// createdAt, isDefault, ...) that this package never consumes. The host will
 // provide a tiny adapter mapping the Starry model to this subset.
 
 enum PersonaDescriptionPosition {

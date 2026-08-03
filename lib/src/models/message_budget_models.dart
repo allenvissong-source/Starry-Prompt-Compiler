@@ -1,6 +1,5 @@
-// Copied verbatim from Starry lib/features/chat/domain/models/message_budget_models.dart
-// (Block C-3.1). No dependencies. Field / enum names are byte-identical to
-// the source so goldens / adapters do not need translation.
+// No dependencies. Field / enum names are byte-identical to the source so
+// goldens / adapters do not need translation.
 
 enum RetainDecision {
   retain,

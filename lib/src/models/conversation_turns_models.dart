@@ -25,7 +25,7 @@
 //   - class TurnStreamSession / Meta / Event / *Delta / *Reasoning /
 //     *CharacterPayload / *Live2dCommand / *Done / *Error / *RawEvent
 //
-// These stay in the Starry host until Block D wiring; if a future service
+// These stay in the Starry host until host-side wiring; if a future service
 // migration needs any of them we extend this file (or split it) at that
 // time, with the same evidence-first discipline.
 //

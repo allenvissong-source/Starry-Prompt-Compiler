@@ -1,6 +1,3 @@
-// Copied verbatim from Starry
-// lib/features/chat/domain/services/message_budget_planner.dart (Block C-8).
-//
 // Byte-identity contract:
 //   • All class / method / field names, sort-order rules, trace reason
 //     strings, and priority precedence numbers match the source of truth.

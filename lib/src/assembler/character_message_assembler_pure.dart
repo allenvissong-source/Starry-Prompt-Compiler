@@ -1,6 +1,5 @@
-// Pure-only subset of Starry
-// lib/features/chat_character/presentation/providers/character_message_assembler_provider.dart
-// (Block C-8). This class covers only the *pure* half of the pipeline —
+// Pure-only subset of the on-device character message assembler. This class
+// covers only the *pure* half of the pipeline —
 // `buildFromExecutionPlan` and its private helpers — with no File I/O, no
 // resolver, no Riverpod, no implicit DateTime.now / Random / locale sources.
 //
@@ -39,11 +38,11 @@
 //     attachment handling per plan spec ("不搬 File 附件读盘"), so no async
 //     surface remains.
 //   • Regex service is passed as a method arg instead of a singleton (source
-//     uses `RegexService.instance`; the package version dropped the singleton
-//     in C-7). Behavior is unchanged when caller supplies a default
+//     uses `RegexService.instance`; the package version dropped the
+//     singleton). Behavior is unchanged when caller supplies a default
 //     `RegexService()`.
 //
-// Deliberately NOT copied (documented for reviewer / Block D consumer):
+// Deliberately NOT copied (documented for the host-side consumer):
 //   • `buildTurnMessages` (source line 37) — uses `DateTime.now()`,
 //     `resolver.getCharacter`, File I/O via
 //     `_buildPendingUserTransportMessage`. Belongs to the Host.
@@ -467,7 +466,7 @@ class CharacterMessageAssemblerPure {
   /// `_buildPendingUserTransportMessage`. The source reads File attachments
   /// from disk via `File(...).readAsBytes()`; the pure package explicitly
   /// drops that path (see file header). Callers that need attachment support
-  /// belong on the Host side (Block D re-wiring) and must build the
+  /// belong on the host side (host-side re-wiring) and must build the
   /// transport message themselves before invoking the pure assembler in a
   /// custom code path — the goldens exercised by this class never include
   /// attachments.

@@ -5,7 +5,7 @@
 // (class `WorldInfoMatcher`, lines 13..153 in the Starry source, sibling
 // class `WorldInfoContextResolver` intentionally left behind because it
 // depends on Repositories / Riverpod / Persona / CharacterEntities —
-// Host-side concerns that belong to Block D wiring).
+// host-side concerns that belong to host-side wiring).
 //
 // Imports: only `world_info.dart` — the Starry source pulled in Flutter
 // foundation, Riverpod, session_prompt_context, character_assembly_models,

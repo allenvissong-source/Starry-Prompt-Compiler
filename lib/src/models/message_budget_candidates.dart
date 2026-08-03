@@ -1,5 +1,3 @@
-// Copied verbatim from Starry
-// lib/features/chat/domain/models/message_budget_candidates.dart (Block C-8).
 // Field / enum names are byte-identical to the source so goldens / adapters
 // do not need translation. Only the import paths are rewritten to sibling
 // package paths (starry:.../conversation_turns_models -> ./conversation_turns_models,

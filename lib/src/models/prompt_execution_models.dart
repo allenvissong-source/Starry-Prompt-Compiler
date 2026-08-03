@@ -1,8 +1,6 @@
-// Copied verbatim from Starry
-// lib/features/chat_character/domain/models/prompt_execution_models.dart
-// (Block C-3.2). Only external dep is message_budget_models, rewritten to a
-// relative import inside this package. All class / enum / field / literal
-// names remain byte-identical to the source.
+// Only external dep is message_budget_models, rewritten to a relative import
+// inside this package. All class / enum / field / literal names remain
+// byte-identical to the source.
 
 import 'message_budget_models.dart';
 

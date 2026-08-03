@@ -1,7 +1,5 @@
-// Copied verbatim from Starry
-// lib/features/chat/data/models/session_prompt_context.dart
-// (Block C-3.4). Only cross-file dep is prompt_execution_models
-// (PromptDisableOverlay); rewritten to a package-relative import.
+// Only cross-file dep is prompt_execution_models (PromptDisableOverlay);
+// rewritten to a package-relative import.
 
 import 'prompt_execution_models.dart';
 

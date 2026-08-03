@@ -5,17 +5,17 @@
 ///
 /// The exported surface mirrors the pure subset of Starry's on-device
 /// pipeline: models, ports, macros, regex, planner, world-info admission /
-/// matcher, budget planner, and the pure assembler (Block C-9 facade).
+/// matcher, budget planner, and the pure assembler facade.
 library;
 
-// Ports (C-2).
+// Ports.
 export 'src/ports/clock.dart';
 export 'src/ports/locale_tag.dart';
 export 'src/ports/logger.dart';
 export 'src/ports/random_source.dart';
 export 'src/ports/variable_store.dart';
 
-// Models (C-3.*). Order kept alphabetical for reviewer readability.
+// Models. Order kept alphabetical for readability.
 export 'src/models/character_assembly_models.dart';
 export 'src/models/character_entities.dart';
 export 'src/models/conversation_turns_models.dart';
@@ -32,7 +32,7 @@ export 'src/models/variable_set.dart';
 export 'src/models/world_info.dart';
 export 'src/models/worldbook_entities.dart';
 
-// Services (C-4..C-8).
+// Services.
 export 'src/assembler/character_message_assembler_pure.dart';
 export 'src/budget/message_budget_planner.dart';
 export 'src/macros/macro_service.dart';
@@ -41,6 +41,6 @@ export 'src/regex/regex_service.dart';
 export 'src/worldinfo/world_info_budget_admission.dart';
 export 'src/worldinfo/world_info_matcher.dart';
 
-// Variables (D-2).
+// Variables.
 export 'src/variables/in_memory_variable_store.dart';
 export 'src/variables/variable_engine.dart';
