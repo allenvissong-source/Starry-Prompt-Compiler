@@ -297,6 +297,190 @@ void main() {
       );
     });
   });
+
+  group('TurnMessage.sourceId host-identity passthrough', () {
+    const assembler = CharacterMessageAssemblerPure();
+
+    // Mirrors the convention used by the group above: the assembler receives
+    // the history with the pending user input already appended as its last
+    // element, and treats that last element as the submitted message (the
+    // bundle loop runs over `effectiveHistory.length - 1`).
+    CharacterTurnAssemblyResult runWithHistory(
+      List<CharacterHistoryMessage> history, {
+      PromptExecutionPlan? plan,
+    }) {
+      final character = buildCharacter();
+      final context = buildContext(character);
+      final request = buildRequest(history: history);
+      final assembledHistory = <CharacterHistoryMessage>[
+        ...history,
+        historyMessage(
+          role: TurnMessageRole.user,
+          text: request.pendingUserInput.text,
+        ),
+      ];
+      final macroService = buildDeterministicMacroService(
+        character: character,
+        request: request,
+        context: context,
+        assembledHistory: assembledHistory,
+      );
+      return assembler.buildFromExecutionPlan(
+        request: request,
+        character: character,
+        resolvedContext: context,
+        executionPlan: plan ?? buildPlan(),
+        assembledHistory: assembledHistory,
+        macroService: macroService,
+      );
+    }
+
+    // Shell with an in-history injection spliced at depth 1, so injected and
+    // host messages are interleaved in the emitted list.
+    PromptExecutionPlan planWithSplicedInjection() {
+      return PromptExecutionPlan(
+        shellSequence: <ResolvedExecutionUnit>[
+          shellUnit(id: 'sys', template: 'You are {{char}} talking to {{user}}.'),
+          historyMarker(),
+        ],
+        historySplicePoints: <HistorySplicePoint>[
+          HistorySplicePoint(
+            offsetFromEnd: 1,
+            units: <ResolvedExecutionUnit>[
+              shellUnit(id: 'depth1_note', template: 'INJECTED_AT_DEPTH_1'),
+            ],
+          ),
+        ],
+        disabledUnits: const <ResolvedExecutionUnit>[],
+      );
+    }
+
+    test('host history messageId is passed through to sourceId', () {
+      final result = runWithHistory(<CharacterHistoryMessage>[
+        historyMessage(role: TurnMessageRole.user, text: 'Hi Aria!', id: 'm1'),
+        historyMessage(
+          role: TurnMessageRole.assistant,
+          text: 'Hello, Traveler.',
+          id: 'm2',
+        ),
+      ]);
+
+      TurnMessage messageWithContent(String text) =>
+          result.messages.singleWhere((message) => message.content == text);
+
+      expect(messageWithContent('Hi Aria!').sourceId, 'm1');
+      expect(messageWithContent('Hello, Traveler.').sourceId, 'm2');
+    });
+
+    test('null messageId yields null sourceId, never a placeholder', () {
+      final result = runWithHistory(<CharacterHistoryMessage>[
+        historyMessage(role: TurnMessageRole.user, text: 'Hi Aria!'),
+        historyMessage(
+          role: TurnMessageRole.assistant,
+          text: 'Hello, Traveler.',
+        ),
+      ]);
+
+      TurnMessage messageWithContent(String text) =>
+          result.messages.singleWhere((message) => message.content == text);
+
+      expect(messageWithContent('Hi Aria!').sourceId, isNull);
+      expect(messageWithContent('Hello, Traveler.').sourceId, isNull);
+      expect(
+        result.messages.every((message) => message.sourceId == null),
+        isTrue,
+        reason: 'no message may invent an identity the host never supplied',
+      );
+    });
+
+    test('mixed history and injection units keep a 1:1 id mapping', () {
+      final result = runWithHistory(
+        <CharacterHistoryMessage>[
+          historyMessage(role: TurnMessageRole.user, text: 'first', id: 'h1'),
+          historyMessage(role: TurnMessageRole.assistant, text: 'second'),
+          historyMessage(role: TurnMessageRole.user, text: 'third', id: 'h3'),
+        ],
+        plan: planWithSplicedInjection(),
+      );
+
+      // Only host rows carry ids, each bound to its own content, in order.
+      expect(
+        result.messages
+            .where((message) => message.sourceId != null)
+            .map((message) => '${message.sourceId}=${message.content}')
+            .toList(),
+        <String>['h1=first', 'h3=third'],
+      );
+
+      // 'second' has no host id -> emitted, but with a null sourceId.
+      expect(
+        result.messages
+            .singleWhere((message) => message.content == 'second')
+            .sourceId,
+        isNull,
+      );
+
+      // Messages synthesized from injection units never carry a host id.
+      final injected = result.messages
+          .where(
+            (message) =>
+                message.content == 'INJECTED_AT_DEPTH_1' ||
+                message.role == TurnMessageRole.system,
+          )
+          .toList();
+      expect(injected, isNotEmpty, reason: 'sanity: injection path ran');
+      expect(
+        injected.every((message) => message.sourceId == null),
+        isTrue,
+        reason: 'injection units have no host ledger identity',
+      );
+      expect(
+        result.messages
+            .singleWhere(
+              (message) => message.content == 'INJECTED_AT_DEPTH_1',
+            )
+            .sourceId,
+        isNull,
+      );
+      expect(result.submittedMessage.sourceId, isNull);
+    });
+
+    test('toJson() never serializes sourceId onto the wire', () {
+      const message = TurnMessage(
+        role: TurnMessageRole.user,
+        content: 'hello',
+        sourceId: 'host-ledger-42',
+      );
+
+      // The new field must not break the const constructor.
+      expect(message.sourceId, 'host-ledger-42');
+      expect(message.toJson().containsKey('sourceId'), isFalse);
+      expect(
+        message.toJson().keys,
+        unorderedEquals(<String>['role', 'content']),
+      );
+      expect(message.toJson()['content'], 'hello');
+      expect(message.toJson().values.contains('host-ledger-42'), isFalse);
+
+      // Same guarantee for a fully assembled result.
+      final result = runWithHistory(<CharacterHistoryMessage>[
+        historyMessage(role: TurnMessageRole.user, text: 'Hi Aria!', id: 'm1'),
+        historyMessage(
+          role: TurnMessageRole.assistant,
+          text: 'Hello, Traveler.',
+          id: 'm2',
+        ),
+      ]);
+      expect(
+        result.messages.any((message) => message.sourceId != null),
+        isTrue,
+        reason: 'sanity: ids are present in-process before wire encoding',
+      );
+      for (final emitted in result.messages) {
+        expect(emitted.toJson().containsKey('sourceId'), isFalse);
+      }
+    });
+  });
 }
 
 class _DeterministicPorts {

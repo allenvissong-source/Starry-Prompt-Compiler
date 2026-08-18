@@ -46,10 +46,27 @@ enum TurnMessageRole {
 }
 
 class TurnMessage {
-  const TurnMessage({required this.role, required this.content});
+  const TurnMessage({
+    required this.role,
+    required this.content,
+    this.sourceId,
+  });
 
   final TurnMessageRole role;
   final dynamic content;
+
+  /// Host-ledger message identity, carried through verbatim from the host
+  /// history message's `messageId`.
+  ///
+  /// In-process transport field only: it is deliberately NOT emitted by
+  /// [toJson]. The host's ledger identity must not leak onto the wire toward
+  /// upstream LLM providers; the endpoint shell consumes this field before
+  /// wire serialization.
+  ///
+  /// `null` when the message has no host identity -- e.g. messages
+  /// synthesized from injection units (character card / world info), or a
+  /// host history message whose `messageId` was itself null.
+  final String? sourceId;
 
   Map<String, dynamic> toJson() => <String, dynamic>{
     'role': role.wireValue,

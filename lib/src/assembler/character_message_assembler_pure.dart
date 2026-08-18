@@ -459,7 +459,14 @@ class CharacterMessageAssemblerPure {
   }
 
   TurnMessage _buildTransportMessage(CharacterHistoryMessage message) {
-    return TurnMessage(role: message.role, content: message.content);
+    // `messageId` is the host's ledger identity and must survive the outbound
+    // boundary unchanged so callers can map each emitted message back to its
+    // input. In-process only -- `TurnMessage.toJson` does not serialize it.
+    return TurnMessage(
+      role: message.role,
+      content: message.content,
+      sourceId: message.messageId,
+    );
   }
 
   /// Pure text-only variant of the source's
