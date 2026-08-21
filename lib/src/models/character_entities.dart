@@ -65,6 +65,10 @@ class Character {
     required this.createdAt,
     required this.updatedAt,
     this.depthPrompt,
+    this.talkativeness = 0.5,
+    this.creatorNotes = '',
+    this.creatorNotesMultilingual = const <String, dynamic>{},
+    this.characterVersion = '1.0',
     this.syncState = 'synced',
     this.localUpdatedAt,
   });
@@ -82,6 +86,18 @@ class Character {
   final String systemPrompt;
   final String postHistoryInstructions;
   final CharacterDepthPrompt? depthPrompt;
+
+  /// Group-chat speaking eagerness, 0.0 - 1.0. First-class character field
+  /// (Starry internal wording); only the v3 import/export codec maps it to
+  /// `data.extensions.talkativeness`.
+  final double talkativeness;
+
+  /// Author-facing notes shipped with the character card body.
+  final String creatorNotes;
+  final Map<String, dynamic> creatorNotesMultilingual;
+
+  /// Card body version string (v3 `character_version`).
+  final String characterVersion;
   final List<String> tags;
   final bool isSystem;
   final String visibilityScope;
@@ -104,6 +120,10 @@ class Character {
     String? systemPrompt,
     String? postHistoryInstructions,
     CharacterDepthPrompt? depthPrompt,
+    double? talkativeness,
+    String? creatorNotes,
+    Map<String, dynamic>? creatorNotesMultilingual,
+    String? characterVersion,
     List<String>? tags,
     bool? isSystem,
     String? visibilityScope,
@@ -127,6 +147,11 @@ class Character {
       postHistoryInstructions:
           postHistoryInstructions ?? this.postHistoryInstructions,
       depthPrompt: depthPrompt ?? this.depthPrompt,
+      talkativeness: talkativeness ?? this.talkativeness,
+      creatorNotes: creatorNotes ?? this.creatorNotes,
+      creatorNotesMultilingual:
+          creatorNotesMultilingual ?? this.creatorNotesMultilingual,
+      characterVersion: characterVersion ?? this.characterVersion,
       tags: tags ?? this.tags,
       isSystem: isSystem ?? this.isSystem,
       visibilityScope: visibilityScope ?? this.visibilityScope,
@@ -152,6 +177,10 @@ class Character {
       'system_prompt': systemPrompt,
       'post_history_instructions': postHistoryInstructions,
       if (depthPrompt != null) 'depth_prompt': depthPrompt!.toJson(),
+      'talkativeness': talkativeness,
+      'creator_notes': creatorNotes,
+      'creator_notes_multilingual': creatorNotesMultilingual,
+      'character_version': characterVersion,
       'tags': tags,
       'is_system': isSystem,
       'visibility_scope': visibilityScope,
@@ -166,9 +195,6 @@ class CharacterAuthorship {
     required this.id,
     required this.characterId,
     required this.creatorUserId,
-    required this.creatorNotes,
-    required this.creatorNotesMultilingual,
-    required this.sourceCharacterVersion,
     required this.createdAt,
     required this.updatedAt,
     this.syncState = 'synced',
@@ -178,9 +204,6 @@ class CharacterAuthorship {
   final String id;
   final String characterId;
   final String creatorUserId;
-  final String creatorNotes;
-  final Map<String, dynamic> creatorNotesMultilingual;
-  final String sourceCharacterVersion;
   final DateTime createdAt;
   final DateTime updatedAt;
   final String syncState;
@@ -190,9 +213,6 @@ class CharacterAuthorship {
     String? id,
     String? characterId,
     String? creatorUserId,
-    String? creatorNotes,
-    Map<String, dynamic>? creatorNotesMultilingual,
-    String? sourceCharacterVersion,
     DateTime? createdAt,
     DateTime? updatedAt,
     String? syncState,
@@ -202,11 +222,6 @@ class CharacterAuthorship {
       id: id ?? this.id,
       characterId: characterId ?? this.characterId,
       creatorUserId: creatorUserId ?? this.creatorUserId,
-      creatorNotes: creatorNotes ?? this.creatorNotes,
-      creatorNotesMultilingual:
-          creatorNotesMultilingual ?? this.creatorNotesMultilingual,
-      sourceCharacterVersion:
-          sourceCharacterVersion ?? this.sourceCharacterVersion,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       syncState: syncState ?? this.syncState,
@@ -219,9 +234,6 @@ class CharacterAuthorship {
       'id': id,
       'character_id': characterId,
       'creator_user_id': creatorUserId,
-      'creator_notes': creatorNotes,
-      'creator_notes_multilingual': creatorNotesMultilingual,
-      'source_character_version': sourceCharacterVersion,
       'created_at': createdAt.toUtc().toIso8601String(),
       'updated_at': updatedAt.toUtc().toIso8601String(),
     };
