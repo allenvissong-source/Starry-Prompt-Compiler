@@ -67,7 +67,6 @@ class Character {
     this.depthPrompt,
     this.talkativeness = 0.5,
     this.creatorNotes = '',
-    this.creatorNotesMultilingual = const <String, dynamic>{},
     this.characterVersion = '1.0',
     this.syncState = 'synced',
     this.localUpdatedAt,
@@ -94,7 +93,6 @@ class Character {
 
   /// Author-facing notes shipped with the character card body.
   final String creatorNotes;
-  final Map<String, dynamic> creatorNotesMultilingual;
 
   /// Card body version string (v3 `character_version`).
   final String characterVersion;
@@ -122,7 +120,6 @@ class Character {
     CharacterDepthPrompt? depthPrompt,
     double? talkativeness,
     String? creatorNotes,
-    Map<String, dynamic>? creatorNotesMultilingual,
     String? characterVersion,
     List<String>? tags,
     bool? isSystem,
@@ -149,8 +146,6 @@ class Character {
       depthPrompt: depthPrompt ?? this.depthPrompt,
       talkativeness: talkativeness ?? this.talkativeness,
       creatorNotes: creatorNotes ?? this.creatorNotes,
-      creatorNotesMultilingual:
-          creatorNotesMultilingual ?? this.creatorNotesMultilingual,
       characterVersion: characterVersion ?? this.characterVersion,
       tags: tags ?? this.tags,
       isSystem: isSystem ?? this.isSystem,
@@ -179,7 +174,6 @@ class Character {
       if (depthPrompt != null) 'depth_prompt': depthPrompt!.toJson(),
       'talkativeness': talkativeness,
       'creator_notes': creatorNotes,
-      'creator_notes_multilingual': creatorNotesMultilingual,
       'character_version': characterVersion,
       'tags': tags,
       'is_system': isSystem,
