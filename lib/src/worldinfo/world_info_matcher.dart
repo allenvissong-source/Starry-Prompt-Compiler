@@ -1,24 +1,25 @@
 // Package-internal service: WorldInfoMatcher.
 //
-// Provenance: extracted verbatim from
-//   lib/features/chat_character/presentation/providers/world_info_providers.dart
-// (class `WorldInfoMatcher`, lines 13..153 in the Starry source, sibling
-// class `WorldInfoContextResolver` intentionally left behind because it
-// depends on Repositories / Riverpod / Persona / CharacterEntities —
-// host-side concerns that belong to host-side wiring).
-//
-// Imports: only `world_info.dart` — the Starry source pulled in Flutter
-// foundation, Riverpod, session_prompt_context, character_assembly_models,
-// persona, starry_providers, preset_repository, resource_binding_repository,
-// worldbook_repository, character_entities exclusively for the Resolver
-// class; the Matcher itself is pure Dart over WorldInfoEntry /
-// WorldInfoMatchContext / WorldInfoPosition / WorldInfoScanSource.
-//
-// Class / method / field / parameter names byte-identical to the Starry
-// source, including the `const` ctor, so downstream call sites and
-// characterization goldens stay valid under SUT=package.
+// Provenance: extracted from the Starry host matcher while keeping this package
+// pure Dart over WorldInfoEntry / WorldInfoMatchContext.
 
 import '../models/world_info.dart';
+
+/// Why an entry entered the match set.
+enum WorldInfoActivationReason { keyword, constant }
+
+/// One matched entry plus the metadata callers need to explain the match.
+class WorldInfoMatch {
+  const WorldInfoMatch({
+    required this.entry,
+    required this.activationReason,
+    this.matchedKey,
+  });
+
+  final WorldInfoEntry entry;
+  final WorldInfoActivationReason activationReason;
+  final String? matchedKey;
+}
 
 class WorldInfoMatcher {
   const WorldInfoMatcher();
@@ -31,37 +32,57 @@ class WorldInfoMatcher {
     int maxRecursionDepth = 3,
     String? generationTrigger,
   }) {
-    final allMatched = <WorldInfoEntry>[];
+    return findMatchingEntriesWithMetadata(
+      context: context,
+      entries: entries,
+      characterId: characterId,
+      characterTags: characterTags,
+      maxRecursionDepth: maxRecursionDepth,
+      generationTrigger: generationTrigger,
+    ).map((match) => match.entry).toList(growable: false);
+  }
+
+  List<WorldInfoMatch> findMatchingEntriesWithMetadata({
+    required WorldInfoMatchContext context,
+    required List<WorldInfoEntry> entries,
+    required String characterId,
+    required List<String> characterTags,
+    int maxRecursionDepth = 3,
+    String? generationTrigger,
+  }) {
+    final allMatched = <WorldInfoMatch>[];
     final processedIds = <String>{};
     var currentContext = context.mergedText;
     var recursionDepth = 0;
 
     while (recursionDepth <= maxRecursionDepth) {
-      final newMatches = entries
-          .where(
-            (entry) => _matchesEntry(
-              entry: entry,
-              mergedContext: currentContext,
-              context: context,
-              characterId: characterId,
-              characterTags: characterTags,
-              generationTrigger: generationTrigger,
-            ),
-          )
-          .where((entry) => !processedIds.contains(entry.id))
-          .where((entry) => !entry.preventRecursion || recursionDepth == 0)
-          .toList(growable: false);
-
-      if (newMatches.isEmpty) {
-        break;
+      final newMatches = <WorldInfoMatch>[];
+      for (final entry in entries) {
+        if (processedIds.contains(entry.id)) continue;
+        if (entry.preventRecursion && recursionDepth != 0) continue;
+        final matchedKey = _matchedPrimaryKey(
+          entry: entry,
+          mergedContext: currentContext,
+          context: context,
+          characterId: characterId,
+          characterTags: characterTags,
+          generationTrigger: generationTrigger,
+        );
+        if (matchedKey == null) continue;
+        newMatches.add(
+          WorldInfoMatch(
+            entry: entry,
+            activationReason: WorldInfoActivationReason.keyword,
+            matchedKey: matchedKey,
+          ),
+        );
       }
-
-      for (final entry in newMatches) {
-        processedIds.add(entry.id);
-        allMatched.add(entry);
-        currentContext = '$currentContext\n${entry.content}';
+      if (newMatches.isEmpty) break;
+      for (final match in newMatches) {
+        processedIds.add(match.entry.id);
+        allMatched.add(match);
+        currentContext = '$currentContext\n${match.entry.content}';
       }
-
       recursionDepth++;
     }
 
@@ -70,17 +91,20 @@ class WorldInfoMatcher {
       if (!entry.enabled || !isConstant || processedIds.contains(entry.id)) {
         continue;
       }
-      if (!entry.appliesToCharacter(characterId, characterTags)) {
-        continue;
-      }
-      if (!entry.supportsGenerationTrigger(generationTrigger)) {
-        continue;
-      }
-      allMatched.add(entry);
+      if (!entry.appliesToCharacter(characterId, characterTags)) continue;
+      if (!entry.supportsGenerationTrigger(generationTrigger)) continue;
+      allMatched.add(
+        WorldInfoMatch(
+          entry: entry,
+          activationReason: WorldInfoActivationReason.constant,
+        ),
+      );
       processedIds.add(entry.id);
     }
 
-    allMatched.sort((a, b) => a.insertionOrder.compareTo(b.insertionOrder));
+    allMatched.sort(
+      (a, b) => a.entry.insertionOrder.compareTo(b.entry.insertionOrder),
+    );
     return allMatched;
   }
 
@@ -94,7 +118,7 @@ class WorldInfoMatcher {
     return grouped;
   }
 
-  bool _matchesEntry({
+  String? _matchedPrimaryKey({
     required WorldInfoEntry entry,
     required String mergedContext,
     required WorldInfoMatchContext context,
@@ -102,11 +126,11 @@ class WorldInfoMatcher {
     required List<String> characterTags,
     required String? generationTrigger,
   }) {
-    if (!entry.enabled) return false;
-    if (!entry.appliesToCharacter(characterId, characterTags)) return false;
-    if (!entry.supportsGenerationTrigger(generationTrigger)) return false;
-    if (!entry.shouldTriggerByProbability()) return false;
-    if (entry.keys.isEmpty) return false;
+    if (!entry.enabled) return null;
+    if (!entry.appliesToCharacter(characterId, characterTags)) return null;
+    if (!entry.supportsGenerationTrigger(generationTrigger)) return null;
+    if (!entry.shouldTriggerByProbability()) return null;
+    if (entry.keys.isEmpty) return null;
 
     final scopedContext = _scopedContext(
       mergedContext: mergedContext,
@@ -117,37 +141,58 @@ class WorldInfoMatcher {
         ? scopedContext
         : scopedContext.toLowerCase();
 
-    var keyMatched = false;
+    String? matchedKey;
     for (final rawKey in entry.keys) {
       final key = rawKey.trim();
       if (key.isEmpty) continue;
-      final needle = entry.caseSensitive ? key : key.toLowerCase();
-      if (entry.matchWholeWords) {
-        final regex = RegExp(r'\b' + RegExp.escape(needle) + r'\b');
-        keyMatched = regex.hasMatch(haystack);
-      } else {
-        keyMatched = haystack.contains(needle);
-      }
-      if (keyMatched) {
+      if (_matchesKey(entry: entry, haystack: haystack, key: key)) {
+        matchedKey = rawKey;
         break;
       }
     }
+    if (matchedKey == null) return null;
+    if (!_satisfiesSecondaryKeys(entry: entry, haystack: haystack)) return null;
+    return matchedKey;
+  }
 
-    if (!keyMatched) return false;
+  bool _satisfiesSecondaryKeys({
+    required WorldInfoEntry entry,
+    required String haystack,
+  }) {
+    if (!entry.selective) return true;
+    final keys = entry.secondaryKeys
+        .map((key) => key.trim())
+        .where((key) => key.isNotEmpty)
+        .toList(growable: false);
+    if (keys.isEmpty) return true;
 
-    if (entry.selective && entry.secondaryKeys.isNotEmpty) {
-      for (final rawKey in entry.secondaryKeys) {
-        final key = rawKey.trim();
-        if (key.isEmpty) continue;
-        final needle = entry.caseSensitive ? key : key.toLowerCase();
-        if (haystack.contains(needle)) {
-          return true;
-        }
+    var matchedCount = 0;
+    for (final key in keys) {
+      if (_matchesKey(entry: entry, haystack: haystack, key: key)) {
+        matchedCount++;
       }
-      return false;
     }
+    final anyMatched = matchedCount > 0;
+    final allMatched = matchedCount == keys.length;
+    return switch (entry.selectiveLogic) {
+      1 => !allMatched,
+      2 => !anyMatched,
+      3 => allMatched,
+      _ => anyMatched,
+    };
+  }
 
-    return true;
+  bool _matchesKey({
+    required WorldInfoEntry entry,
+    required String haystack,
+    required String key,
+  }) {
+    final needle = entry.caseSensitive ? key : key.toLowerCase();
+    if (needle.isEmpty) return false;
+    if (entry.matchWholeWords) {
+      return RegExp(r'\b' + RegExp.escape(needle) + r'\b').hasMatch(haystack);
+    }
+    return haystack.contains(needle);
   }
 
   String _scopedContext({
@@ -155,9 +200,7 @@ class WorldInfoMatcher {
     required WorldInfoMatchContext context,
     required List<WorldInfoScanSource> scanSources,
   }) {
-    if (scanSources.isEmpty) {
-      return mergedContext;
-    }
+    if (scanSources.isEmpty) return mergedContext;
     return context.scopedText(scanSources);
   }
 }

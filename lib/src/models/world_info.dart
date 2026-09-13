@@ -266,6 +266,7 @@ class WorldInfoEntry {
     required this.cooldown,
     required this.delay,
     required this.characterFilter,
+    this.selectiveLogic = 0,
     this.generationTriggers = const <String>[],
     this.ignoreBudget = false,
     this.outletName,
@@ -298,6 +299,7 @@ class WorldInfoEntry {
       enabled: entry.enabled,
       constant: entry.constant,
       selective: entry.selective,
+      selectiveLogic: entry.selectiveLogic,
       insertionOrder: entry.insertionOrder,
       caseSensitive: entry.caseSensitive,
       matchWholeWords: entry.matchWholeWords,
@@ -335,6 +337,9 @@ class WorldInfoEntry {
   final bool enabled;
   final bool constant;
   final bool selective;
+
+  /// Multi-key activation logic: 0=AND_ANY, 1=NOT_ALL, 2=NOT_ANY, 3=AND_ALL.
+  final int selectiveLogic;
   final int insertionOrder;
   final bool caseSensitive;
   final bool matchWholeWords;
