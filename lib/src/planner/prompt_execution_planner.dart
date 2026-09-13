@@ -1,4 +1,4 @@
-﻿// Package-internal service: PromptExecutionPlanner.
+// Package-internal service: PromptExecutionPlanner.
 //
 // Provenance: verbatim copy of
 //   lib/features/chat_character/domain/services/prompt_execution_planner.dart
@@ -278,9 +278,7 @@ class PromptExecutionPlanner {
           injectionOrder: entry.insertionOrder,
           generationTriggers: entry.runtimePolicy.activation.generationTriggers,
           ignoreBudget: entry.ignoreBudget,
-          budgetTier: entry.ignoreBudget
-              ? ExecutionBudgetTier.high
-              : ExecutionBudgetTier.normal,
+          budgetTier: _budgetTierForWorldInfoEntry(entry),
         ),
       );
     }
@@ -1260,6 +1258,25 @@ class PromptExecutionPlanner {
       PromptBlockKind.systemPrompt => ExecutionBudgetTier.mandatory,
       PromptBlockKind.postHistoryInstructions => ExecutionBudgetTier.high,
       _ => ExecutionBudgetTier.normal,
+    };
+  }
+
+  /// Resolves a world-info entry's budget tier.
+  ///
+  /// Prefers an explicit tier carried by the entry's runtime policy (set at
+  /// import time from the source dialect's allocation priority, e.g.
+  /// SillyTavern's `weight`). Falls back to deriving a tier from `ignoreBudget`
+  /// so entries without an explicit priority keep their previous behavior.
+  ExecutionBudgetTier _budgetTierForWorldInfoEntry(WorldInfoEntry entry) {
+    final explicit = entry.runtimePolicy.budget.tier?.trim().toLowerCase();
+    return switch (explicit) {
+      'mandatory' => ExecutionBudgetTier.mandatory,
+      'high' => ExecutionBudgetTier.high,
+      'normal' => ExecutionBudgetTier.normal,
+      'low' => ExecutionBudgetTier.low,
+      _ => entry.ignoreBudget
+          ? ExecutionBudgetTier.high
+          : ExecutionBudgetTier.normal,
     };
   }
 

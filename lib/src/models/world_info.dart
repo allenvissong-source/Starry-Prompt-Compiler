@@ -105,9 +105,17 @@ class WorldInfoActivationPolicy {
 }
 
 class WorldInfoBudgetPolicy {
-  const WorldInfoBudgetPolicy({this.ignoreLimit = false});
+  const WorldInfoBudgetPolicy({this.ignoreLimit = false, this.tier});
 
   final bool ignoreLimit;
+
+  /// Budget precedence tier (`mandatory` / `high` / `normal` / `low`).
+  ///
+  /// Populated when the source dialect carries an explicit allocation priority
+  /// (SillyTavern's `weight`, translated to a tier at import time). `null` means
+  /// "no explicit tier", and the planner falls back to deriving one from
+  /// [ignoreLimit].
+  final String? tier;
 }
 
 class WorldInfoTargetingPolicy {
@@ -149,6 +157,7 @@ class WorldInfoRuntimePolicy {
         ignoreLimit:
             budgetPolicy['ignoreLimit'] == true ||
             extensions['ignoreBudget'] == true,
+        tier: _normalizedOrNull(budgetPolicy['tier']),
       ),
       targeting: WorldInfoTargetingPolicy(
         scanSources: _scanSourceList(
