@@ -247,9 +247,48 @@ class WorldInfoMatcher {
     final needle = entry.caseSensitive ? key : key.toLowerCase();
     if (needle.isEmpty) return false;
     if (entry.matchWholeWords) {
-      return RegExp(r'\b' + RegExp.escape(needle) + r'\b').hasMatch(haystack);
+      return _matchesWholeWord(haystack: haystack, needle: needle);
     }
     return haystack.contains(needle);
+  }
+
+  /// Whole-word matching that also works for scripts written without spaces.
+  ///
+  /// Dart's `\b` is based on `\w`, which excludes CJK characters. A CJK key
+  /// therefore needs an explicit boundary rule: adjacent characters must not
+  /// themselves be CJK. Latin and mixed keys retain the existing `\b` behavior.
+  bool _matchesWholeWord({required String haystack, required String needle}) {
+    if (!_isCjkText(needle)) {
+      return RegExp(r'\b' + RegExp.escape(needle) + r'\b').hasMatch(haystack);
+    }
+    var from = 0;
+    while (true) {
+      final index = haystack.indexOf(needle, from);
+      if (index < 0) return false;
+      final beforeOk =
+          index == 0 || !_isCjkCodeUnit(haystack.codeUnitAt(index - 1));
+      final endIndex = index + needle.length;
+      final afterOk =
+          endIndex >= haystack.length ||
+          !_isCjkCodeUnit(haystack.codeUnitAt(endIndex));
+      if (beforeOk && afterOk) return true;
+      from = index + 1;
+    }
+  }
+
+  bool _isCjkText(String text) {
+    if (text.isEmpty) return false;
+    for (final unit in text.codeUnits) {
+      if (!_isCjkCodeUnit(unit)) return false;
+    }
+    return true;
+  }
+
+  bool _isCjkCodeUnit(int unit) {
+    return (unit >= 0x4E00 && unit <= 0x9FFF) ||
+        (unit >= 0x3400 && unit <= 0x4DBF) ||
+        (unit >= 0xF900 && unit <= 0xFAFF) ||
+        (unit >= 0x3040 && unit <= 0x30FF);
   }
 
   String _scopedContext({
