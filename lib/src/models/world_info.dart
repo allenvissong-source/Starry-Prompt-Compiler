@@ -90,9 +90,24 @@ WorldInfoScanSource? worldInfoScanSourceFromString(String raw) {
 }
 
 class WorldInfoActivationPolicy {
-  const WorldInfoActivationPolicy({this.generationTriggers = const <String>[]});
+  const WorldInfoActivationPolicy({
+    this.generationTriggers = const <String>[],
+    this.delayLevel,
+  });
 
   final List<String> generationTriggers;
+
+  /// Recursion level at which a delayed entry unlocks, or `null` for none.
+  ///
+  /// Populated when the source dialect carries an explicit level (SillyTavern
+  /// types `delayUntilRecursion` as `bool | number`, the number being the level;
+  /// the inbound translator splits that into the boolean gate plus this value).
+  /// `null` means "no explicit level", so a delayed entry unlocks at the first
+  /// recursion pass — which is also how SillyTavern reads its own `true`.
+  ///
+  /// Meaningless on its own: an entry is delayed only if the boolean gate says
+  /// so, and consumers must check that first.
+  final int? delayLevel;
 
   bool supportsGenerationTrigger(String? trigger) {
     if (generationTriggers.isEmpty) return true;
@@ -152,6 +167,7 @@ class WorldInfoRuntimePolicy {
         generationTriggers: _stringList(
           activationPolicy['generationTriggers'] ?? extensions['triggers'],
         ),
+        delayLevel: _delayLevelOrNull(activationPolicy['delayLevel']),
       ),
       budget: WorldInfoBudgetPolicy(
         ignoreLimit:
@@ -267,6 +283,8 @@ class WorldInfoEntry {
     required this.delay,
     required this.characterFilter,
     this.selectiveLogic = 0,
+    this.excludeRecursion = false,
+    this.delayUntilRecursionLevel,
     this.generationTriggers = const <String>[],
     this.ignoreBudget = false,
     this.outletName,
@@ -277,6 +295,7 @@ class WorldInfoEntry {
            WorldInfoRuntimePolicy(
              activation: WorldInfoActivationPolicy(
                generationTriggers: generationTriggers,
+               delayLevel: delayUntilRecursionLevel,
              ),
              budget: WorldInfoBudgetPolicy(ignoreLimit: ignoreBudget),
              targeting: WorldInfoTargetingPolicy(
@@ -311,7 +330,9 @@ class WorldInfoEntry {
       group: entry.groupName.isEmpty ? null : entry.groupName,
       groupWeight: entry.groupWeight,
       preventRecursion: entry.preventRecursion,
+      excludeRecursion: entry.excludeRecursion,
       delayUntilRecursion: entry.delayUntilRecursion,
+      delayUntilRecursionLevel: policy.activation.delayLevel,
       scanDepth: entry.entryScanDepth ?? 0,
       role: entry.role,
       sticky: entry.sticky,
@@ -350,8 +371,34 @@ class WorldInfoEntry {
   final int depth;
   final String? group;
   final int groupWeight;
+
+  /// Whether this entry's content is withheld from the cascade after it fires.
+  ///
+  /// SillyTavern's "Prevent further recursion": the entry is injected normally,
+  /// but its text is not appended to the scan buffer, so it cannot activate
+  /// anything downstream. It closes the *exit*, not the entrance.
   final bool preventRecursion;
+
+  /// Whether this entry refuses to be activated by another entry's content.
+  ///
+  /// SillyTavern's "Non-recursable": a direct hit from the user's own text still
+  /// activates it; only recursion passes skip it. It closes the *entrance*, not
+  /// the exit — the mirror image of [preventRecursion].
+  final bool excludeRecursion;
+
+  /// Whether this entry only activates during a recursion pass.
+  ///
+  /// The authoritative gate. [delayUntilRecursionLevel] refines *when* within
+  /// recursion, but is meaningless while this is `false`.
   final bool delayUntilRecursion;
+
+  /// Recursion level at which a delayed entry unlocks, or `null` for the first
+  /// pass.
+  ///
+  /// Only consult this after [delayUntilRecursion]. The inbound translator
+  /// guarantees a level implies the gate, but this layer does not depend on that:
+  /// a level without a gate has no meaning, so the boolean always decides.
+  final int? delayUntilRecursionLevel;
   final int scanDepth;
   final int role;
   final int sticky;
@@ -366,6 +413,20 @@ class WorldInfoEntry {
 
   bool supportsGenerationTrigger(String? trigger) {
     return runtimePolicy.activation.supportsGenerationTrigger(trigger);
+  }
+
+  /// The recursion level this entry unlocks at, or `null` if it is not delayed.
+  ///
+  /// The single place the two fields are reconciled, so no caller has to decide
+  /// how they interact. [delayUntilRecursion] is authoritative: a level attached
+  /// to an undelayed entry is ignored rather than promoted into a delay, which
+  /// would inject an entry the author never delayed. A delayed entry with no
+  /// level unlocks at 1, matching SillyTavern's reading of its own `true`.
+  int? get effectiveDelayLevel {
+    if (!delayUntilRecursion) return null;
+    final level = delayUntilRecursionLevel;
+    if (level == null || level < 1) return 1;
+    return level;
   }
 
   bool appliesToCharacter(String characterId, List<String> tags) {
@@ -464,4 +525,25 @@ String _scanSourceToWireValue(WorldInfoScanSource source) {
 String? _normalizedOrNull(dynamic raw) {
   final normalized = (raw ?? '').toString().trim();
   return normalized.isEmpty ? null : normalized;
+}
+
+/// Reads a recursion delay level, rejecting anything that is not a real level.
+///
+/// Values below 1 are discarded rather than clamped: they carry no ordering
+/// information, and the absent case already means "unlocks at the first
+/// recursion pass".
+int? _delayLevelOrNull(dynamic raw) {
+  if (raw is bool) return null;
+  final int? parsed;
+  if (raw is int) {
+    parsed = raw;
+  } else if (raw is num) {
+    parsed = raw.toInt();
+  } else if (raw is String) {
+    parsed = int.tryParse(raw.trim());
+  } else {
+    parsed = null;
+  }
+  if (parsed == null || parsed < 1) return null;
+  return parsed;
 }

@@ -3,6 +3,8 @@
 // Provenance: extracted from the Starry host matcher while keeping this package
 // pure Dart over WorldInfoEntry / WorldInfoMatchContext.
 
+import 'dart:collection';
+
 import '../models/world_info.dart';
 
 /// Why an entry entered the match set.
@@ -55,11 +57,42 @@ class WorldInfoMatcher {
     var currentContext = context.mergedText;
     var recursionDepth = 0;
 
+    // Delay levels open one at a time, lowest first, mirroring SillyTavern's
+    // `availableRecursionDelayLevels`. Deduplicated and sorted so the order is a
+    // pure function of the entry set rather than of map iteration.
+    final pendingDelayLevels = SplayTreeSet<int>();
+    for (final entry in entries) {
+      final level = entry.effectiveDelayLevel;
+      if (level != null) pendingDelayLevels.add(level);
+    }
+    // The lowest level is consumed up front, exactly as SillyTavern does
+    // (`currentRecursionDelayLevel = available.shift() ?? 0`). Two behaviors
+    // depend on this and both would be wrong if the loop opened it instead:
+    // level 1 must already be open during the *first* recursion pass rather than
+    // costing a depth step, and only the levels still queued afterwards may
+    // extend scanning past the point where cascading stops.
+    var currentDelayLevel = 0;
+    if (pendingDelayLevels.isNotEmpty) {
+      currentDelayLevel = pendingDelayLevels.first;
+      pendingDelayLevels.remove(currentDelayLevel);
+    }
+
     while (recursionDepth <= maxRecursionDepth) {
+      final isRecursionPass = recursionDepth != 0;
       final newMatches = <WorldInfoMatch>[];
       for (final entry in entries) {
         if (processedIds.contains(entry.id)) continue;
-        if (entry.preventRecursion && recursionDepth != 0) continue;
+        // "Non-recursable": refuses to be activated *by another entry*. A direct
+        // hit on the user's own text still counts, which is why this is scoped to
+        // recursion passes only.
+        if (entry.excludeRecursion && isRecursionPass) continue;
+        // "Delay until recursion": invisible outside recursion, and inside it
+        // only once its level has been opened.
+        final delayLevel = entry.effectiveDelayLevel;
+        if (delayLevel != null &&
+            (!isRecursionPass || delayLevel > currentDelayLevel)) {
+          continue;
+        }
         final matchedKey = _matchedPrimaryKey(
           entry: entry,
           mergedContext: currentContext,
@@ -77,12 +110,36 @@ class WorldInfoMatcher {
           ),
         );
       }
-      if (newMatches.isEmpty) break;
+
+      // Only entries that may feed the cascade extend the scan text. This is
+      // SillyTavern's `successfulNewEntries.filter(x => !x.preventRecursion)`:
+      // "Prevent further recursion" still injects the entry, it just withholds
+      // its text from the next pass.
+      final cascadeText = <String>[];
       for (final match in newMatches) {
         processedIds.add(match.entry.id);
         allMatched.add(match);
-        currentContext = '$currentContext\n${match.entry.content}';
+        if (!match.entry.preventRecursion) {
+          cascadeText.add(match.entry.content);
+        }
       }
+
+      if (cascadeText.isEmpty) {
+        // Cascading has stalled. SillyTavern's escape hatch — advance to the next
+        // queued delay level and keep scanning — applies only when a level is
+        // still queued, so a lone delayed entry with nothing to trigger it stays
+        // silent instead of quietly firing anyway.
+        final nextLevel = pendingDelayLevels.firstOrNull;
+        if (nextLevel == null || recursionDepth >= maxRecursionDepth) break;
+        pendingDelayLevels.remove(nextLevel);
+        currentDelayLevel = nextLevel;
+        // Delayed entries only activate inside a recursion pass, so make sure the
+        // next iteration is one even if the very first pass matched nothing.
+        recursionDepth = recursionDepth == 0 ? 1 : recursionDepth + 1;
+        continue;
+      }
+
+      currentContext = '$currentContext\n${cascadeText.join('\n')}';
       recursionDepth++;
     }
 
