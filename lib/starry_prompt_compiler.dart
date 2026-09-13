@@ -38,6 +38,7 @@ export 'src/budget/message_budget_planner.dart';
 export 'src/macros/macro_service.dart';
 export 'src/planner/prompt_execution_planner.dart';
 export 'src/regex/regex_service.dart';
+export 'src/worldinfo/text_recall.dart';
 export 'src/worldinfo/world_info_budget_admission.dart';
 export 'src/worldinfo/world_info_matcher.dart';
 
