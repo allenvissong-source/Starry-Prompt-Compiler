@@ -478,20 +478,6 @@ class PromptSection {
 class PromptManagerConfig {
   const PromptManagerConfig({required this.sections});
 
-  factory PromptManagerConfig.fromPromptBlocks(List<PromptBlock> blocks) {
-    final sections =
-        blocks
-            .where((block) => !block.isMarker)
-            .map((block) => block.toPromptSection())
-            .toList(growable: false)
-          ..sort((a, b) => a.order.compareTo(b.order));
-    return PromptManagerConfig(
-      sections: sections.isEmpty
-          ? PromptManagerConfig.defaultConfig().sections
-          : sections,
-    );
-  }
-
   /// Get default configuration
   factory PromptManagerConfig.defaultConfig() {
     return PromptManagerConfig(
@@ -581,174 +567,6 @@ class PromptManagerConfig {
     );
   }
 
-  /// Parse from SillyTavern preset format
-  /// SillyTavern uses prompts array for custom prompts and prompt_order for ordering
-  factory PromptManagerConfig.fromSillyTavernJson(Map<String, dynamic> json) {
-    // Map SillyTavern identifiers to our section types
-    final identifierMap = <String, PromptSectionType>{
-      'main': PromptSectionType.systemPrompt,
-      'personaDescription': PromptSectionType.persona,
-      'charDescription': PromptSectionType.characterDescription,
-      'charPersonality': PromptSectionType.characterPersonality,
-      'scenario': PromptSectionType.characterScenario,
-      'dialogueExamples': PromptSectionType.exampleMessages,
-      'worldInfoBefore': PromptSectionType.worldInfo,
-      'worldInfoAfter': PromptSectionType.worldInfoAfter,
-      'jailbreak': PromptSectionType.postHistoryInstructions,
-      'nsfw': PromptSectionType.nsfw,
-      'chatHistory': PromptSectionType.chatHistory,
-      'enhanceDefinitions': PromptSectionType.enhanceDefinitions,
-    };
-
-    // Parse custom prompts from the prompts array
-    final promptsArray = json['prompts'] as List<dynamic>?;
-    final customPrompts = <String, PromptSection>{};
-
-    if (promptsArray != null) {
-      for (final prompt in promptsArray) {
-        if (prompt is Map<String, dynamic>) {
-          final identifier = prompt['identifier'] as String?;
-          final name = prompt['name'] as String? ?? 'Custom Prompt';
-          final content = prompt['content'] as String? ?? '';
-          final role = prompt['role'] as String? ?? 'system';
-          final injectionPosition = prompt['injection_position'] as int?;
-          final injectionDepth = prompt['injection_depth'] as int?;
-
-          if (identifier != null) {
-            // Check if this is a known identifier or a custom one
-            final type = identifierMap[identifier] ?? PromptSectionType.custom;
-            customPrompts[identifier] = PromptSection(
-              type: type,
-              name: name,
-              order: 0, // Will be set later based on prompt_order
-              content: content,
-              identifier: identifier,
-              role: role,
-              injectionPosition: injectionPosition,
-              injectionDepth: injectionDepth,
-            );
-          }
-        }
-      }
-    }
-
-    // Get prompt_order - prefer character_id 100001 (custom) over 100000 (default)
-    final promptOrder = json['prompt_order'] as List<dynamic>?;
-    List<dynamic>? orderList;
-
-    if (promptOrder != null) {
-      // First try to find character_id 100001 (custom order with all prompts)
-      for (final entry in promptOrder) {
-        if (entry is Map<String, dynamic>) {
-          final charId = entry['character_id'];
-          if (charId == 100001 && entry['order'] != null) {
-            orderList = entry['order'] as List<dynamic>;
-            break;
-          }
-        }
-      }
-      // Fall back to character_id 100000 (default order)
-      if (orderList == null) {
-        for (final entry in promptOrder) {
-          if (entry is Map<String, dynamic> && entry['order'] != null) {
-            orderList = entry['order'] as List<dynamic>;
-            break;
-          }
-        }
-      }
-    }
-
-    if (orderList == null) {
-      return PromptManagerConfig.defaultConfig();
-    }
-
-    // Build sections from SillyTavern order
-    final sections = <PromptSection>[];
-    final seenIdentifiers = <String>{};
-    var order = 0;
-
-    for (final item in orderList) {
-      if (item is Map<String, dynamic>) {
-        final identifier = item['identifier'] as String?;
-        final enabled = item['enabled'] as bool? ?? true;
-
-        if (identifier == null || seenIdentifiers.contains(identifier)) {
-          continue;
-        }
-        seenIdentifiers.add(identifier);
-
-        // Check if we have a custom prompt with this identifier
-        if (customPrompts.containsKey(identifier)) {
-          final customPrompt = customPrompts[identifier]!;
-          sections.add(customPrompt.copyWith(enabled: enabled, order: order++));
-        } else if (identifierMap.containsKey(identifier)) {
-          // It's a known built-in type
-          final type = identifierMap[identifier]!;
-          sections.add(
-            PromptSection(
-              type: type,
-              name: PromptSection.getDisplayName(type),
-              enabled: enabled,
-              order: order++,
-              identifier: identifier,
-            ),
-          );
-        } else {
-          // It's a custom prompt not in the prompts array (UUID identifier)
-          // Create a placeholder for it
-          sections.add(
-            PromptSection(
-              type: PromptSectionType.custom,
-              name: 'Custom Prompt',
-              enabled: enabled,
-              order: order++,
-              identifier: identifier,
-              content: '', // Content not available
-            ),
-          );
-        }
-      }
-    }
-
-    // Add any custom prompts that weren't in the order list
-    for (final entry in customPrompts.entries) {
-      if (!seenIdentifiers.contains(entry.key)) {
-        sections.add(entry.value.copyWith(order: order++));
-      }
-    }
-
-    // Add any missing built-in section types with default values (disabled)
-    // Order: worldInfo before chat, chatHistory, worldInfoAfter after chat
-    final builtInTypes = [
-      PromptSectionType.systemPrompt,
-      PromptSectionType.persona,
-      PromptSectionType.characterDescription,
-      PromptSectionType.characterPersonality,
-      PromptSectionType.characterScenario,
-      PromptSectionType.exampleMessages,
-      PromptSectionType.worldInfo,
-      PromptSectionType.authorNote,
-      PromptSectionType.chatHistory,
-      PromptSectionType.worldInfoAfter,
-      PromptSectionType.postHistoryInstructions,
-    ];
-
-    for (final type in builtInTypes) {
-      final hasType = sections.any((s) => s.type == type && !s.isCustom);
-      if (!hasType) {
-        sections.add(
-          PromptSection(
-            type: type,
-            name: PromptSection.getDisplayName(type),
-            enabled: false,
-            order: order++,
-          ),
-        );
-      }
-    }
-
-    return PromptManagerConfig(sections: sections);
-  }
   final List<PromptSection> sections;
 
   List<PromptBlock> toPromptBlocks({String? promptProfileId}) {
@@ -1006,7 +824,14 @@ class PromptManagerPreset {
     );
   }
 
-  /// Import from export format
+  /// Import from the shareable export format.
+  ///
+  /// Import-only by design: the matching writer was removed once it turned out
+  /// nothing ever produced this shape, so the app reads presets shared from
+  /// elsewhere without claiming to emit them. Reads `sections` and tolerates a
+  /// missing `createdAt`; the `version` / `format` keys older files carry are
+  /// ignored rather than validated, because there is no second version to
+  /// distinguish.
   factory PromptManagerPreset.fromExportJson(
     Map<String, dynamic> json,
     String id,
@@ -1058,16 +883,6 @@ class PromptManagerPreset {
       isBuiltIn: isBuiltIn ?? this.isBuiltIn,
     );
   }
-
-  /// Export format for sharing (compatible with SillyTavern style)
-  Map<String, dynamic> toExportJson() => {
-    'name': name,
-    'description': description,
-    'version': 1,
-    'format': 'starry_prompt_preset',
-    'sections': config.sections.map((s) => s.toJson()).toList(),
-    'createdAt': createdAt.toIso8601String(),
-  };
 
   /// Full JSON for storage
   Map<String, dynamic> toJson() => {

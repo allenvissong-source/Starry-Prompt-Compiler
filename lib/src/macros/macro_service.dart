@@ -45,10 +45,10 @@ class MacroService {
     RandomSource? random,
     LocaleTag locale = const LocaleTag('en_US'),
     Logger logger = const NoopLogger(),
-  })  : _clock = clock,
-        _random = random ?? SecureRandomSource(),
-        _locale = locale,
-        _logger = logger;
+  }) : _clock = clock,
+       _random = random ?? SecureRandomSource(),
+       _locale = locale,
+       _logger = logger;
 
   final Clock _clock;
   final RandomSource _random;
@@ -705,17 +705,5 @@ class MacroContext {
       resolvedVariables: resolvedVariables ?? this.resolvedVariables,
       groupCharacterNames: groupCharacterNames ?? this.groupCharacterNames,
     );
-  }
-}
-
-/// Extension to easily process macros on strings.
-///
-/// The extension form does not take Ports; callers who need deterministic
-/// output construct [MacroService] directly with an injected [Clock] /
-/// [RandomSource] / [LocaleTag] / [Logger].
-extension MacroStringExtension on String {
-  /// Process all macros in this string using the given context
-  String processMacros(MacroContext context) {
-    return MacroService(context).process(this);
   }
 }

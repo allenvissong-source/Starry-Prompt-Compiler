@@ -48,23 +48,6 @@ class PromptProfileResource {
     );
   }
 
-  factory PromptProfileResource.fromPreset(
-    PromptManagerPreset preset, {
-    bool? isDefault,
-  }) {
-    return PromptProfileResource(
-      id: preset.id,
-      name: preset.name,
-      description: preset.description,
-      config: preset.config,
-      blocks: preset.config.toPromptBlocks(promptProfileId: preset.id),
-      isDefault: isDefault ?? preset.id == 'default',
-      isBuiltIn: preset.isBuiltIn,
-      createdAt: preset.createdAt,
-      updatedAt: preset.updatedAt,
-    );
-  }
-
   final String id;
   final String name;
   final String? description;
@@ -77,9 +60,6 @@ class PromptProfileResource {
 
   List<PromptBlock> get resolvedBlocks =>
       blocks.isNotEmpty ? blocks : config.toPromptBlocks(promptProfileId: id);
-
-  PromptManagerConfig get runtimeConfig =>
-      PromptManagerConfig.fromPromptBlocks(resolvedBlocks);
 
   PromptProfileResource copyWith({
     String? id,
@@ -116,16 +96,4 @@ class PromptProfileResource {
     'createdAt': createdAt.toIso8601String(),
     'updatedAt': updatedAt.toIso8601String(),
   };
-
-  PromptManagerPreset toPreset() {
-    return PromptManagerPreset(
-      id: id,
-      name: name,
-      description: description,
-      config: runtimeConfig,
-      createdAt: createdAt,
-      updatedAt: updatedAt,
-      isBuiltIn: isBuiltIn,
-    );
-  }
 }

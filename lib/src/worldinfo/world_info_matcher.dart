@@ -166,6 +166,14 @@ class WorldInfoMatcher {
   ///
   /// Production paths use [findMatchingEntriesWithMetadata], where recall always
   /// runs.
+  ///
+  /// One exception, because the line above reads as a guarantee: the Flutter
+  /// host currently calls *this* method (`world_info_providers.dart`), so recall
+  /// does not run on that path -- `keywordOnlyBaseline` carries`maxCandidates: 0`,
+  /// which short-circuits the recall stage. `starry_injection_service` is the only
+  /// caller on the metadata variant today. Moving the host across is a host-side
+  /// change; do not `fix` it by folding recall in here, which would rewrite the
+  /// goldens named above.
   List<WorldInfoEntry> findMatchingEntries({
     required WorldInfoMatchContext context,
     required List<WorldInfoEntry> entries,

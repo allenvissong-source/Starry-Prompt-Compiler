@@ -79,6 +79,12 @@ class AuthorNotePolicy {
 }
 
 class SessionPromptContext {
+  /// [version] is written on every `toJson` and defaults to 2 when absent, but
+  /// nothing reads it to branch: there is no v1 decode path in this package or
+  /// its hosts. So a genuinely older payload is not rejected or migrated -- it is
+  /// accepted and interpreted under v2 semantics. Treat the field as a stamp for
+  /// future use, not as a compatibility gate, and add the branch before relying
+  /// on it.
   const SessionPromptContext({
     this.version = 2,
     this.personaId,
