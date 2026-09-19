@@ -374,7 +374,7 @@ void main() {
         groupedWorldInfoEntries: <WorldInfoPosition, List<WorldInfoEntry>>{
           WorldInfoPosition.before: <WorldInfoEntry>[entry],
         },
-        resolvedPromptBlocks: const <PromptBlock>[],
+        resolvedPromptBlocks: const <PromptBlockV2>[],
         promptContext: const SessionPromptContext(),
         resolvedVariables: const <String, dynamic>{},
       );
