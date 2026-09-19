@@ -1,4 +1,4 @@
-﻿// Package-internal model: prompt profile (owner-scoped named preset).
+// Package-internal model: prompt profile (owner-scoped named preset).
 //
 // Provenance: verbatim copy of
 //   lib/features/prompt_lab/data/models/prompt_profile.dart
@@ -17,7 +17,7 @@ class PromptProfileResource {
     required this.createdAt,
     required this.updatedAt,
     this.description,
-    this.blocks = const <PromptBlock>[],
+    this.blocks = const <LegacyPromptBlock>[],
     this.isDefault = false,
     this.isBuiltIn = false,
   });
@@ -34,10 +34,11 @@ class PromptProfileResource {
           (json['blocks'] as List?)
               ?.whereType<Map<dynamic, dynamic>>()
               .map(
-                (item) => PromptBlock.fromJson(Map<String, dynamic>.from(item)),
+                (item) =>
+                    LegacyPromptBlock.fromJson(Map<String, dynamic>.from(item)),
               )
               .toList(growable: false) ??
-          const <PromptBlock>[],
+          const <LegacyPromptBlock>[],
       isDefault: json['isDefault'] == true,
       isBuiltIn: json['isBuiltIn'] == true,
       createdAt:
@@ -53,13 +54,13 @@ class PromptProfileResource {
   final String name;
   final String? description;
   final PromptManagerConfig config;
-  final List<PromptBlock> blocks;
+  final List<LegacyPromptBlock> blocks;
   final bool isDefault;
   final bool isBuiltIn;
   final DateTime createdAt;
   final DateTime updatedAt;
 
-  List<PromptBlock> get resolvedBlocks =>
+  List<LegacyPromptBlock> get resolvedBlocks =>
       blocks.isNotEmpty ? blocks : config.toPromptBlocks(promptProfileId: id);
 
   PromptProfileResource copyWith({
@@ -67,7 +68,7 @@ class PromptProfileResource {
     String? name,
     String? description,
     PromptManagerConfig? config,
-    List<PromptBlock>? blocks,
+    List<LegacyPromptBlock>? blocks,
     bool? isDefault,
     bool? isBuiltIn,
     DateTime? createdAt,

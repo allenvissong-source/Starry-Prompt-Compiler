@@ -1,4 +1,4 @@
-﻿// Package-internal model: prompt manager (prompt blocks + config schemas).
+// Package-internal model: prompt manager (prompt blocks + config schemas).
 //
 // Provenance: verbatim copy of
 //   lib/features/prompt_lab/data/models/prompt_manager.dart
@@ -9,7 +9,7 @@
 import 'instant_storage.dart';
 
 /// Compatibility-era prompt section types used by prompt-lab editing and
-/// import/export adapters. Production runtime assembly uses PromptBlock ->
+/// import/export adapters. Production runtime assembly uses LegacyPromptBlock ->
 /// ResolvedExecutionUnit -> PromptExecutionPlan rather than PromptSection.
 enum PromptSectionType {
   systemPrompt,
@@ -28,7 +28,7 @@ enum PromptSectionType {
   custom, // For custom user-defined prompts
 }
 
-enum PromptBlockKind {
+enum LegacyPromptBlockKind {
   systemPrompt,
   persona,
   characterDescription,
@@ -46,15 +46,15 @@ enum PromptBlockKind {
   custom,
 }
 
-class PromptBlockPlacementPolicy {
-  const PromptBlockPlacementPolicy({
+class LegacyPromptBlockPlacementPolicy {
+  const LegacyPromptBlockPlacementPolicy({
     this.anchor = 'relative',
     this.injectionPosition,
     this.depth,
   });
 
-  factory PromptBlockPlacementPolicy.fromJson(Map<String, dynamic> json) {
-    return PromptBlockPlacementPolicy(
+  factory LegacyPromptBlockPlacementPolicy.fromJson(Map<String, dynamic> json) {
+    return LegacyPromptBlockPlacementPolicy(
       anchor: (json['anchor'] ?? 'relative').toString(),
       injectionPosition: _asNullableInt(json['injectionPosition']),
       depth: _asNullableInt(json['depth'] ?? json['injectionDepth']),
@@ -72,12 +72,14 @@ class PromptBlockPlacementPolicy {
   };
 }
 
-class PromptBlockActivationPolicy {
-  const PromptBlockActivationPolicy({
+class LegacyPromptBlockActivationPolicy {
+  const LegacyPromptBlockActivationPolicy({
     this.generationTriggers = const <String>[],
   });
 
-  factory PromptBlockActivationPolicy.fromJson(Map<String, dynamic> json) {
+  factory LegacyPromptBlockActivationPolicy.fromJson(
+    Map<String, dynamic> json,
+  ) {
     final raw = json['generationTriggers'] ?? json['injectionTrigger'];
     final triggers = raw is List
         ? raw
@@ -85,7 +87,7 @@ class PromptBlockActivationPolicy {
               .where((item) => item.isNotEmpty)
               .toList(growable: false)
         : const <String>[];
-    return PromptBlockActivationPolicy(generationTriggers: triggers);
+    return LegacyPromptBlockActivationPolicy(generationTriggers: triggers);
   }
 
   final List<String> generationTriggers;
@@ -95,11 +97,14 @@ class PromptBlockActivationPolicy {
   Map<String, dynamic> toJson() => {'generationTriggers': generationTriggers};
 }
 
-class PromptBlockPriorityPolicy {
-  const PromptBlockPriorityPolicy({this.sortOrder = 0, this.injectionOrder});
+class LegacyPromptBlockPriorityPolicy {
+  const LegacyPromptBlockPriorityPolicy({
+    this.sortOrder = 0,
+    this.injectionOrder,
+  });
 
-  factory PromptBlockPriorityPolicy.fromJson(Map<String, dynamic> json) {
-    return PromptBlockPriorityPolicy(
+  factory LegacyPromptBlockPriorityPolicy.fromJson(Map<String, dynamic> json) {
+    return LegacyPromptBlockPriorityPolicy(
       sortOrder: _asInt(json['sortOrder'] ?? json['order'], fallback: 0),
       injectionOrder: _asNullableInt(json['injectionOrder']),
     );
@@ -114,14 +119,16 @@ class PromptBlockPriorityPolicy {
   };
 }
 
-class PromptBlockProtectionPolicy {
-  const PromptBlockProtectionPolicy({
+class LegacyPromptBlockProtectionPolicy {
+  const LegacyPromptBlockProtectionPolicy({
     this.locked = false,
     this.forbidOverride = false,
   });
 
-  factory PromptBlockProtectionPolicy.fromJson(Map<String, dynamic> json) {
-    return PromptBlockProtectionPolicy(
+  factory LegacyPromptBlockProtectionPolicy.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return LegacyPromptBlockProtectionPolicy(
       locked: json['locked'] == true,
       forbidOverride:
           json['forbidOverride'] == true || json['forbid_overrides'] == true,
@@ -137,15 +144,15 @@ class PromptBlockProtectionPolicy {
   };
 }
 
-class PromptBlockProvenance {
-  const PromptBlockProvenance({
+class LegacyPromptBlockProvenance {
+  const LegacyPromptBlockProvenance({
     this.source = 'local',
     this.identifier,
     this.extension = false,
   });
 
-  factory PromptBlockProvenance.fromJson(Map<String, dynamic> json) {
-    return PromptBlockProvenance(
+  factory LegacyPromptBlockProvenance.fromJson(Map<String, dynamic> json) {
+    return LegacyPromptBlockProvenance(
       source: (json['source'] ?? 'local').toString(),
       identifier: (json['identifier'] ?? '').toString().trim().isEmpty
           ? null
@@ -165,8 +172,8 @@ class PromptBlockProvenance {
   };
 }
 
-class PromptBlock {
-  const PromptBlock({
+class LegacyPromptBlock {
+  const LegacyPromptBlock({
     required this.id,
     required this.kind,
     required this.name,
@@ -174,22 +181,22 @@ class PromptBlock {
     this.enabled = true,
     this.content = '',
     this.role,
-    this.placementPolicy = const PromptBlockPlacementPolicy(),
-    this.activationPolicy = const PromptBlockActivationPolicy(),
-    this.priorityPolicy = const PromptBlockPriorityPolicy(),
-    this.protectionPolicy = const PromptBlockProtectionPolicy(),
-    this.provenance = const PromptBlockProvenance(),
+    this.placementPolicy = const LegacyPromptBlockPlacementPolicy(),
+    this.activationPolicy = const LegacyPromptBlockActivationPolicy(),
+    this.priorityPolicy = const LegacyPromptBlockPriorityPolicy(),
+    this.protectionPolicy = const LegacyPromptBlockProtectionPolicy(),
+    this.provenance = const LegacyPromptBlockProvenance(),
   });
 
-  factory PromptBlock.fromJson(Map<String, dynamic> json) {
-    return PromptBlock(
+  factory LegacyPromptBlock.fromJson(Map<String, dynamic> json) {
+    return LegacyPromptBlock(
       id: (json['id'] ?? '').toString(),
       promptProfileId: (json['promptProfileId'] ?? '').toString().trim().isEmpty
           ? null
           : (json['promptProfileId'] ?? '').toString().trim(),
-      kind: PromptBlockKind.values.firstWhere(
+      kind: LegacyPromptBlockKind.values.firstWhere(
         (value) => value.name == (json['kind'] ?? '').toString(),
-        orElse: () => PromptBlockKind.custom,
+        orElse: () => LegacyPromptBlockKind.custom,
       ),
       name: (json['name'] ?? '').toString(),
       enabled: json['enabled'] != false,
@@ -197,29 +204,31 @@ class PromptBlock {
       role: (json['role'] ?? '').toString().trim().isEmpty
           ? null
           : (json['role'] ?? '').toString().trim(),
-      placementPolicy: PromptBlockPlacementPolicy.fromJson(
+      placementPolicy: LegacyPromptBlockPlacementPolicy.fromJson(
         _map(json['placementPolicy']),
       ),
-      activationPolicy: PromptBlockActivationPolicy.fromJson(
+      activationPolicy: LegacyPromptBlockActivationPolicy.fromJson(
         _map(json['activationPolicy']),
       ),
-      priorityPolicy: PromptBlockPriorityPolicy.fromJson(
+      priorityPolicy: LegacyPromptBlockPriorityPolicy.fromJson(
         _map(json['priorityPolicy']),
       ),
-      protectionPolicy: PromptBlockProtectionPolicy.fromJson(
+      protectionPolicy: LegacyPromptBlockProtectionPolicy.fromJson(
         _map(json['protectionPolicy']),
       ),
-      provenance: PromptBlockProvenance.fromJson(_map(json['provenance'])),
+      provenance: LegacyPromptBlockProvenance.fromJson(
+        _map(json['provenance']),
+      ),
     );
   }
 
   /// Compatibility conversion from legacy/editor prompt sections into the
-  /// canonical PromptBlock model.
-  factory PromptBlock.fromPromptSection(
+  /// canonical LegacyPromptBlock model.
+  factory LegacyPromptBlock.fromPromptSection(
     PromptSection section, {
     String? promptProfileId,
   }) {
-    return PromptBlock(
+    return LegacyPromptBlock(
       id: '${promptProfileId ?? 'local'}_${section.identifier ?? section.type.name}_${section.order}',
       promptProfileId: promptProfileId,
       kind: _promptBlockKindFromSectionType(section.type),
@@ -227,36 +236,36 @@ class PromptBlock {
       enabled: section.enabled,
       content: section.content ?? '',
       role: section.role,
-      placementPolicy: PromptBlockPlacementPolicy(
+      placementPolicy: LegacyPromptBlockPlacementPolicy(
         anchor: section.injectionPosition == 1 ? 'absolute' : 'relative',
         injectionPosition: section.injectionPosition,
         depth: section.injectionDepth,
       ),
-      priorityPolicy: PromptBlockPriorityPolicy(
+      priorityPolicy: LegacyPromptBlockPriorityPolicy(
         sortOrder: section.order,
         injectionOrder: section.order,
       ),
-      provenance: PromptBlockProvenance(identifier: section.identifier),
+      provenance: LegacyPromptBlockProvenance(identifier: section.identifier),
     );
   }
 
   final String id;
   final String? promptProfileId;
-  final PromptBlockKind kind;
+  final LegacyPromptBlockKind kind;
   final String name;
   final bool enabled;
   final String content;
   final String? role;
-  final PromptBlockPlacementPolicy placementPolicy;
-  final PromptBlockActivationPolicy activationPolicy;
-  final PromptBlockPriorityPolicy priorityPolicy;
-  final PromptBlockProtectionPolicy protectionPolicy;
-  final PromptBlockProvenance provenance;
+  final LegacyPromptBlockPlacementPolicy placementPolicy;
+  final LegacyPromptBlockActivationPolicy activationPolicy;
+  final LegacyPromptBlockPriorityPolicy priorityPolicy;
+  final LegacyPromptBlockProtectionPolicy protectionPolicy;
+  final LegacyPromptBlockProvenance provenance;
 
-  bool get isMarker => kind == PromptBlockKind.marker;
+  bool get isMarker => kind == LegacyPromptBlockKind.marker;
 
   /// Compatibility conversion for prompt-lab/editor surfaces. Production
-  /// runtime planning consumes PromptBlock directly.
+  /// runtime planning consumes LegacyPromptBlock directly.
   PromptSection toPromptSection() {
     final sectionType = _promptSectionTypeFromKind(kind);
     return PromptSection(
@@ -572,10 +581,10 @@ class PromptManagerConfig {
 
   final List<PromptSection> sections;
 
-  List<PromptBlock> toPromptBlocks({String? promptProfileId}) {
+  List<LegacyPromptBlock> toPromptBlocks({String? promptProfileId}) {
     return sections
         .map(
-          (section) => PromptBlock.fromPromptSection(
+          (section) => LegacyPromptBlock.fromPromptSection(
             section,
             promptProfileId: promptProfileId,
           ),
@@ -715,69 +724,69 @@ class PromptManagerConfig {
   }
 }
 
-PromptBlockKind _promptBlockKindFromSectionType(PromptSectionType type) {
+LegacyPromptBlockKind _promptBlockKindFromSectionType(PromptSectionType type) {
   switch (type) {
     case PromptSectionType.systemPrompt:
-      return PromptBlockKind.systemPrompt;
+      return LegacyPromptBlockKind.systemPrompt;
     case PromptSectionType.persona:
-      return PromptBlockKind.persona;
+      return LegacyPromptBlockKind.persona;
     case PromptSectionType.characterDescription:
-      return PromptBlockKind.characterDescription;
+      return LegacyPromptBlockKind.characterDescription;
     case PromptSectionType.characterPersonality:
-      return PromptBlockKind.characterPersonality;
+      return LegacyPromptBlockKind.characterPersonality;
     case PromptSectionType.characterScenario:
-      return PromptBlockKind.characterScenario;
+      return LegacyPromptBlockKind.characterScenario;
     case PromptSectionType.exampleMessages:
-      return PromptBlockKind.exampleMessages;
+      return LegacyPromptBlockKind.exampleMessages;
     case PromptSectionType.worldInfo:
-      return PromptBlockKind.worldInfo;
+      return LegacyPromptBlockKind.worldInfo;
     case PromptSectionType.worldInfoAfter:
-      return PromptBlockKind.worldInfoAfter;
+      return LegacyPromptBlockKind.worldInfoAfter;
     case PromptSectionType.authorNote:
-      return PromptBlockKind.authorNote;
+      return LegacyPromptBlockKind.authorNote;
     case PromptSectionType.postHistoryInstructions:
-      return PromptBlockKind.postHistoryInstructions;
+      return LegacyPromptBlockKind.postHistoryInstructions;
     case PromptSectionType.nsfw:
-      return PromptBlockKind.nsfw;
+      return LegacyPromptBlockKind.nsfw;
     case PromptSectionType.chatHistory:
-      return PromptBlockKind.chatHistory;
+      return LegacyPromptBlockKind.chatHistory;
     case PromptSectionType.enhanceDefinitions:
-      return PromptBlockKind.enhanceDefinitions;
+      return LegacyPromptBlockKind.enhanceDefinitions;
     case PromptSectionType.custom:
-      return PromptBlockKind.custom;
+      return LegacyPromptBlockKind.custom;
   }
 }
 
-PromptSectionType _promptSectionTypeFromKind(PromptBlockKind kind) {
+PromptSectionType _promptSectionTypeFromKind(LegacyPromptBlockKind kind) {
   switch (kind) {
-    case PromptBlockKind.systemPrompt:
+    case LegacyPromptBlockKind.systemPrompt:
       return PromptSectionType.systemPrompt;
-    case PromptBlockKind.persona:
+    case LegacyPromptBlockKind.persona:
       return PromptSectionType.persona;
-    case PromptBlockKind.characterDescription:
+    case LegacyPromptBlockKind.characterDescription:
       return PromptSectionType.characterDescription;
-    case PromptBlockKind.characterPersonality:
+    case LegacyPromptBlockKind.characterPersonality:
       return PromptSectionType.characterPersonality;
-    case PromptBlockKind.characterScenario:
+    case LegacyPromptBlockKind.characterScenario:
       return PromptSectionType.characterScenario;
-    case PromptBlockKind.exampleMessages:
+    case LegacyPromptBlockKind.exampleMessages:
       return PromptSectionType.exampleMessages;
-    case PromptBlockKind.worldInfo:
+    case LegacyPromptBlockKind.worldInfo:
       return PromptSectionType.worldInfo;
-    case PromptBlockKind.worldInfoAfter:
+    case LegacyPromptBlockKind.worldInfoAfter:
       return PromptSectionType.worldInfoAfter;
-    case PromptBlockKind.authorNote:
+    case LegacyPromptBlockKind.authorNote:
       return PromptSectionType.authorNote;
-    case PromptBlockKind.postHistoryInstructions:
+    case LegacyPromptBlockKind.postHistoryInstructions:
       return PromptSectionType.postHistoryInstructions;
-    case PromptBlockKind.nsfw:
+    case LegacyPromptBlockKind.nsfw:
       return PromptSectionType.nsfw;
-    case PromptBlockKind.chatHistory:
+    case LegacyPromptBlockKind.chatHistory:
       return PromptSectionType.chatHistory;
-    case PromptBlockKind.enhanceDefinitions:
+    case LegacyPromptBlockKind.enhanceDefinitions:
       return PromptSectionType.enhanceDefinitions;
-    case PromptBlockKind.marker:
-    case PromptBlockKind.custom:
+    case LegacyPromptBlockKind.marker:
+    case LegacyPromptBlockKind.custom:
       return PromptSectionType.custom;
   }
 }

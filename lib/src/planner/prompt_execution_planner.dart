@@ -11,7 +11,7 @@ import '../models/world_info.dart';
 import '../models/character_assembly_models.dart';
 import '../models/prompt_execution_models.dart';
 import '../models/persona.dart';
-import '../models/prompt_block_v2.dart';
+import '../models/prompt_block.dart';
 import '../models/prompt_manager.dart';
 import '../models/character_entities.dart';
 
@@ -96,10 +96,10 @@ class PromptExecutionPlanner {
   }
 
   List<ResolvedExecutionUnit> _collectPromptBlockUnits(
-    List<PromptBlockV2> blocks,
+    List<PromptBlock> blocks,
     Character character,
   ) {
-    final orderedBlocks = List<PromptBlockV2>.from(blocks)
+    final orderedBlocks = List<PromptBlock>.from(blocks)
       ..sort(_comparePromptBlocks);
     final markerOrders = _promptMarkerOrders(orderedBlocks);
     final historyMarkerOrder = markerOrders['history'];
@@ -978,7 +978,7 @@ class PromptExecutionPlanner {
   }
 
   ExecutionInsertionMode _blockInsertionMode(
-    PromptBlockV2 block, {
+    PromptBlock block, {
     required int sourceOrder,
     required int? historyMarkerOrder,
     required String? explicitAnchorId,
@@ -1005,7 +1005,7 @@ class PromptExecutionPlanner {
     return ExecutionInsertionMode.relativeBefore;
   }
 
-  String _resolveBlockTemplate(PromptBlockV2 block, Character character) {
+  String _resolveBlockTemplate(PromptBlock block, Character character) {
     if (block.content.isNotEmpty) {
       return block.content;
     }
@@ -1039,7 +1039,7 @@ class PromptExecutionPlanner {
     };
   }
 
-  Map<String, int> _promptMarkerOrders(List<PromptBlockV2> orderedBlocks) {
+  Map<String, int> _promptMarkerOrders(List<PromptBlock> orderedBlocks) {
     final markerOrders = <String, int>{};
     for (final block in orderedBlocks) {
       if (_isHistoryMarker(block) || block.isMarker) {
@@ -1049,14 +1049,14 @@ class PromptExecutionPlanner {
     return markerOrders;
   }
 
-  bool _isHistoryMarker(PromptBlockV2 block) {
+  bool _isHistoryMarker(PromptBlock block) {
     return block.kind == 'core:chatHistory' ||
         (block.isMarker &&
             (block.provenance.identifier ?? '').trim().toLowerCase() ==
                 'chathistory');
   }
 
-  String _markerIdentityForBlock(PromptBlockV2 block) {
+  String _markerIdentityForBlock(PromptBlock block) {
     if (_isHistoryMarker(block)) {
       return 'history';
     }
@@ -1086,7 +1086,7 @@ class PromptExecutionPlanner {
   }
 
   String? _anchorIdForBlock(
-    PromptBlockV2 block, {
+    PromptBlock block, {
     required ExecutionInsertionMode insertionMode,
     required String? explicitAnchorId,
   }) {
@@ -1239,11 +1239,11 @@ class PromptExecutionPlanner {
     return interval <= 1 || ((historyLength + 1) % interval == 0);
   }
 
-  bool _isMandatoryPromptBlock(PromptBlockV2 block) {
+  bool _isMandatoryPromptBlock(PromptBlock block) {
     return block.kind == 'core:systemPrompt';
   }
 
-  int _comparePromptBlocks(PromptBlockV2 a, PromptBlockV2 b) {
+  int _comparePromptBlocks(PromptBlock a, PromptBlock b) {
     final orderCompare = a.priority.sortOrder.compareTo(b.priority.sortOrder);
     if (orderCompare != 0) {
       return orderCompare;
@@ -1251,7 +1251,7 @@ class PromptExecutionPlanner {
     return a.id.compareTo(b.id);
   }
 
-  ExecutionBudgetTier _budgetTierForBlock(PromptBlockV2 block) {
+  ExecutionBudgetTier _budgetTierForBlock(PromptBlock block) {
     return switch (block.kindName) {
       'systemPrompt' => ExecutionBudgetTier.mandatory,
       'postHistoryInstructions' => ExecutionBudgetTier.high,

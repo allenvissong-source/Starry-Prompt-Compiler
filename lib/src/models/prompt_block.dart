@@ -32,16 +32,16 @@ const int kPromptBlockSchemaVersion = 2;
 /// All three fields are nullable and a block that carried no `placementPolicy`
 /// in V1 produces all three as `null` — which is exactly what the planner reads
 /// when the V1 policy sits at its defaults.
-class PromptBlockPlacementV2 {
-  const PromptBlockPlacementV2({
+class PromptBlockPlacement {
+  const PromptBlockPlacement({
     this.anchor,
     this.injectionPosition,
     this.depth,
     this.injectionOrder,
   });
 
-  factory PromptBlockPlacementV2.fromJson(Map<String, dynamic> json) {
-    return PromptBlockPlacementV2(
+  factory PromptBlockPlacement.fromJson(Map<String, dynamic> json) {
+    return PromptBlockPlacement(
       anchor: _stringOrNull(json['anchor']),
       injectionPosition: _intOrNull(json['injectionPosition']),
       depth: _intOrNull(json['depth']),
@@ -83,12 +83,12 @@ class PromptBlockPlacementV2 {
   };
 }
 
-class PromptBlockActivationV2 {
-  const PromptBlockActivationV2({this.generationTriggers = const <String>[]});
+class PromptBlockActivation {
+  const PromptBlockActivation({this.generationTriggers = const <String>[]});
 
-  factory PromptBlockActivationV2.fromJson(Map<String, dynamic> json) {
+  factory PromptBlockActivation.fromJson(Map<String, dynamic> json) {
     final raw = json['generationTriggers'];
-    return PromptBlockActivationV2(
+    return PromptBlockActivation(
       generationTriggers: raw is List
           ? raw
                 .map((item) => item.toString().trim())
@@ -105,11 +105,11 @@ class PromptBlockActivationV2 {
   };
 }
 
-class PromptBlockPriorityV2 {
-  const PromptBlockPriorityV2({this.sortOrder = 0, this.injectionOrder});
+class PromptBlockPriority {
+  const PromptBlockPriority({this.sortOrder = 0, this.injectionOrder});
 
-  factory PromptBlockPriorityV2.fromJson(Map<String, dynamic> json) {
-    return PromptBlockPriorityV2(
+  factory PromptBlockPriority.fromJson(Map<String, dynamic> json) {
+    return PromptBlockPriority(
       sortOrder: _intOrNull(json['sortOrder']) ?? 0,
       injectionOrder: _intOrNull(json['injectionOrder']),
     );
@@ -124,14 +124,14 @@ class PromptBlockPriorityV2 {
   };
 }
 
-class PromptBlockProtectionV2 {
-  const PromptBlockProtectionV2({
+class PromptBlockProtection {
+  const PromptBlockProtection({
     this.locked = false,
     this.forbidOverride = false,
   });
 
-  factory PromptBlockProtectionV2.fromJson(Map<String, dynamic> json) {
-    return PromptBlockProtectionV2(
+  factory PromptBlockProtection.fromJson(Map<String, dynamic> json) {
+    return PromptBlockProtection(
       locked: json['locked'] == true,
       forbidOverride: json['forbidOverride'] == true,
     );
@@ -146,15 +146,15 @@ class PromptBlockProtectionV2 {
   };
 }
 
-class PromptBlockProvenanceV2 {
-  const PromptBlockProvenanceV2({
+class PromptBlockProvenance {
+  const PromptBlockProvenance({
     this.source = 'app',
     this.identifier,
     this.extension = false,
   });
 
-  factory PromptBlockProvenanceV2.fromJson(Map<String, dynamic> json) {
-    return PromptBlockProvenanceV2(
+  factory PromptBlockProvenance.fromJson(Map<String, dynamic> json) {
+    return PromptBlockProvenance(
       source: (json['source'] ?? 'app').toString(),
       identifier: _stringOrNull(json['identifier']),
       extension: json['extension'] == true,
@@ -173,8 +173,8 @@ class PromptBlockProvenanceV2 {
 }
 
 /// A prompt block in the V2 shape.
-class PromptBlockV2 {
-  const PromptBlockV2({
+class PromptBlock {
+  const PromptBlock({
     required this.id,
     required this.kind,
     required this.name,
@@ -182,16 +182,16 @@ class PromptBlockV2 {
     this.enabled = true,
     this.content = '',
     this.role,
-    this.placement = const PromptBlockPlacementV2(),
-    this.activation = const PromptBlockActivationV2(),
-    this.priority = const PromptBlockPriorityV2(),
-    this.protection = const PromptBlockProtectionV2(),
-    this.provenance = const PromptBlockProvenanceV2(),
+    this.placement = const PromptBlockPlacement(),
+    this.activation = const PromptBlockActivation(),
+    this.priority = const PromptBlockPriority(),
+    this.protection = const PromptBlockProtection(),
+    this.provenance = const PromptBlockProvenance(),
     this.extensions = const <String, dynamic>{},
   });
 
-  factory PromptBlockV2.fromJson(Map<String, dynamic> json) {
-    return PromptBlockV2(
+  factory PromptBlock.fromJson(Map<String, dynamic> json) {
+    return PromptBlock(
       id: (json['id'] ?? '').toString(),
       promptProfileId: _stringOrNull(json['promptProfileId']),
       kind: normalizePromptBlockKind((json['kind'] ?? '').toString()),
@@ -199,11 +199,11 @@ class PromptBlockV2 {
       enabled: json['enabled'] != false,
       content: (json['content'] ?? '').toString(),
       role: _stringOrNull(json['role']),
-      placement: PromptBlockPlacementV2.fromJson(_asMap(json['placement'])),
-      activation: PromptBlockActivationV2.fromJson(_asMap(json['activation'])),
-      priority: PromptBlockPriorityV2.fromJson(_asMap(json['priority'])),
-      protection: PromptBlockProtectionV2.fromJson(_asMap(json['protection'])),
-      provenance: PromptBlockProvenanceV2.fromJson(_asMap(json['provenance'])),
+      placement: PromptBlockPlacement.fromJson(_asMap(json['placement'])),
+      activation: PromptBlockActivation.fromJson(_asMap(json['activation'])),
+      priority: PromptBlockPriority.fromJson(_asMap(json['priority'])),
+      protection: PromptBlockProtection.fromJson(_asMap(json['protection'])),
+      provenance: PromptBlockProvenance.fromJson(_asMap(json['provenance'])),
       extensions: _asMap(json['extensions']),
     );
   }
@@ -219,11 +219,11 @@ class PromptBlockV2 {
   final bool enabled;
   final String content;
   final String? role;
-  final PromptBlockPlacementV2 placement;
-  final PromptBlockActivationV2 activation;
-  final PromptBlockPriorityV2 priority;
-  final PromptBlockProtectionV2 protection;
-  final PromptBlockProvenanceV2 provenance;
+  final PromptBlockPlacement placement;
+  final PromptBlockActivation activation;
+  final PromptBlockPriority priority;
+  final PromptBlockProtection protection;
+  final PromptBlockProvenance provenance;
 
   /// Opaque third-party payloads, keyed by namespace. The compiler never reads,
   /// mutates, reorders or drops anything in here. Unknown V1 keys land under
@@ -244,7 +244,7 @@ class PromptBlockV2 {
   bool get isCoreKind =>
       kind.startsWith('$kCorePromptBlockKindNamespace:') || !kind.contains(':');
 
-  PromptBlockV2 copyWith({
+  PromptBlock copyWith({
     String? id,
     String? kind,
     String? name,
@@ -252,14 +252,14 @@ class PromptBlockV2 {
     bool? enabled,
     String? content,
     String? role,
-    PromptBlockPlacementV2? placement,
-    PromptBlockActivationV2? activation,
-    PromptBlockPriorityV2? priority,
-    PromptBlockProtectionV2? protection,
-    PromptBlockProvenanceV2? provenance,
+    PromptBlockPlacement? placement,
+    PromptBlockActivation? activation,
+    PromptBlockPriority? priority,
+    PromptBlockProtection? protection,
+    PromptBlockProvenance? provenance,
     Map<String, dynamic>? extensions,
   }) {
-    return PromptBlockV2(
+    return PromptBlock(
       id: id ?? this.id,
       kind: kind ?? this.kind,
       name: name ?? this.name,

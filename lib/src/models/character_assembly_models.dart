@@ -11,7 +11,7 @@ import 'message_budget_models.dart';
 import 'world_info.dart';
 import 'prompt_execution_models.dart';
 import 'persona.dart';
-import 'prompt_block_v2.dart';
+import 'prompt_block.dart';
 import 'prompt_profile.dart';
 import 'regex_profile.dart';
 import 'variable_set.dart';
@@ -103,7 +103,7 @@ class ResolvedPromptContext {
     required List<WorldInfoEntry> worldInfoEntries,
     required Map<WorldInfoPosition, List<WorldInfoEntry>>
     groupedWorldInfoEntries,
-    required List<PromptBlockV2> resolvedPromptBlocks,
+    required List<PromptBlock> resolvedPromptBlocks,
     required this.promptContext,
     required Map<String, dynamic> resolvedVariables,
     List<String> worldInfoCandidateIds = const <String>[],
@@ -120,7 +120,7 @@ class ResolvedPromptContext {
                    MapEntry(key, List<WorldInfoEntry>.unmodifiable(value)),
              ),
            ),
-       resolvedPromptBlocks = List<PromptBlockV2>.unmodifiable(
+       resolvedPromptBlocks = List<PromptBlock>.unmodifiable(
          resolvedPromptBlocks,
        ),
        worldInfoCandidateIds = List<String>.unmodifiable(worldInfoCandidateIds),
@@ -133,12 +133,12 @@ class ResolvedPromptContext {
   /// Prompt blocks in the V2 shape.
   ///
   /// V2 is the only shape this type accepts. A caller still holding V1 blocks
-  /// converts at its own edge with promptBlocksV1ToV2, which keeps the
+  /// converts at its own edge with promptBlocksFromLegacy, which keeps the
   /// conversion visible at the point where legacy data actually enters rather
   /// than hiding it inside a constructor every caller goes through. Everything
   /// downstream - the planner in particular - sees only V2, so no version
   /// branch exists inside the compiler.
-  final List<PromptBlockV2> resolvedPromptBlocks;
+  final List<PromptBlock> resolvedPromptBlocks;
   final SessionPromptContext promptContext;
   final List<String> worldInfoCandidateIds;
   final String worldInfoContextText;

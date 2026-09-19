@@ -11,22 +11,25 @@ import 'package:test/test.dart';
 /// records why that was unsound. If someone reintroduces it, the "verbatim"
 /// group below is what should go red.
 void main() {
-  PromptBlock v1({
+  LegacyPromptBlock v1({
     String id = 'b1',
-    PromptBlockKind kind = PromptBlockKind.custom,
+    LegacyPromptBlockKind kind = LegacyPromptBlockKind.custom,
     String name = 'block',
     String? promptProfileId,
     bool enabled = true,
     String content = '',
     String? role,
-    PromptBlockPlacementPolicy placement = const PromptBlockPlacementPolicy(),
-    PromptBlockActivationPolicy activation =
-        const PromptBlockActivationPolicy(),
-    PromptBlockPriorityPolicy priority = const PromptBlockPriorityPolicy(),
-    PromptBlockProtectionPolicy protection =
-        const PromptBlockProtectionPolicy(),
-    PromptBlockProvenance provenance = const PromptBlockProvenance(),
-  }) => PromptBlock(
+    LegacyPromptBlockPlacementPolicy placement =
+        const LegacyPromptBlockPlacementPolicy(),
+    LegacyPromptBlockActivationPolicy activation =
+        const LegacyPromptBlockActivationPolicy(),
+    LegacyPromptBlockPriorityPolicy priority =
+        const LegacyPromptBlockPriorityPolicy(),
+    LegacyPromptBlockProtectionPolicy protection =
+        const LegacyPromptBlockProtectionPolicy(),
+    LegacyPromptBlockProvenance provenance =
+        const LegacyPromptBlockProvenance(),
+  }) => LegacyPromptBlock(
     id: id,
     kind: kind,
     name: name,
@@ -45,10 +48,10 @@ void main() {
     test('all 15 V1 enum values map to a core: namespaced kind', () {
       // Exhaustive by construction: iterating the enum means a new V1 kind
       // cannot be added without this test covering it.
-      expect(PromptBlockKind.values, hasLength(15));
+      expect(LegacyPromptBlockKind.values, hasLength(15));
 
-      for (final kind in PromptBlockKind.values) {
-        final converted = promptBlockV1ToV2(v1(kind: kind));
+      for (final kind in LegacyPromptBlockKind.values) {
+        final converted = promptBlockFromLegacy(v1(kind: kind));
         expect(
           converted.kind,
           'core:${kind.name}',
@@ -61,11 +64,11 @@ void main() {
 
     test('marker is answered from kind, not a carried boolean', () {
       expect(
-        promptBlockV1ToV2(v1(kind: PromptBlockKind.marker)).isMarker,
+        promptBlockFromLegacy(v1(kind: LegacyPromptBlockKind.marker)).isMarker,
         isTrue,
       );
       expect(
-        promptBlockV1ToV2(v1(kind: PromptBlockKind.custom)).isMarker,
+        promptBlockFromLegacy(v1(kind: LegacyPromptBlockKind.custom)).isMarker,
         isFalse,
       );
     });
@@ -73,15 +76,15 @@ void main() {
     test(
       'an unrecognised V1 kind string decodes to custom, then core:custom',
       () {
-        // V1's fromJson falls back to PromptBlockKind.custom for an unknown
+        // V1's fromJson falls back to LegacyPromptBlockKind.custom for an unknown
         // string, so the V2 result is core:custom rather than an invented kind.
-        final decoded = PromptBlock.fromJson(<String, dynamic>{
+        final decoded = LegacyPromptBlock.fromJson(<String, dynamic>{
           'id': 'b1',
           'kind': 'somethingNobodyDefined',
           'name': 'block',
         });
-        expect(decoded.kind, PromptBlockKind.custom);
-        expect(promptBlockV1ToV2(decoded).kind, 'core:custom');
+        expect(decoded.kind, LegacyPromptBlockKind.custom);
+        expect(promptBlockFromLegacy(decoded).kind, 'core:custom');
       },
     );
 
@@ -96,7 +99,7 @@ void main() {
     test('a block with no placement policy yields all-null placement', () {
       // 45 of the corpus's 46 blocks are this shape. Under the removed pattern
       // table they would have been hard-coded to position "after".
-      final converted = promptBlockV1ToV2(v1());
+      final converted = promptBlockFromLegacy(v1());
       expect(converted.placement.anchor, 'relative');
       expect(converted.placement.injectionPosition, isNull);
       expect(converted.placement.depth, isNull);
@@ -115,8 +118,8 @@ void main() {
         'MyOutlet',
         'chat_history',
       ]) {
-        final converted = promptBlockV1ToV2(
-          v1(placement: PromptBlockPlacementPolicy(anchor: raw)),
+        final converted = promptBlockFromLegacy(
+          v1(placement: LegacyPromptBlockPlacementPolicy(anchor: raw)),
         );
         expect(
           converted.placement.anchor,
@@ -127,9 +130,9 @@ void main() {
     });
 
     test('injectionPosition and depth are copied including negatives', () {
-      final converted = promptBlockV1ToV2(
+      final converted = promptBlockFromLegacy(
         v1(
-          placement: const PromptBlockPlacementPolicy(
+          placement: const LegacyPromptBlockPlacementPolicy(
             anchor: 'history',
             injectionPosition: -1,
             depth: 4,
@@ -144,9 +147,9 @@ void main() {
     test('the one real fixture shape round-trips', () {
       // A09_absolute_depth_splice's splice block is the only block in the
       // 22-fixture corpus carrying a placementPolicy at all.
-      final converted = promptBlockV1ToV2(
+      final converted = promptBlockFromLegacy(
         v1(
-          placement: const PromptBlockPlacementPolicy(
+          placement: const LegacyPromptBlockPlacementPolicy(
             anchor: 'absolute',
             depth: 1,
           ),
@@ -167,10 +170,10 @@ void main() {
         'authorNote',
         'someOutlet',
       ]) {
-        final converted = promptBlockV1ToV2(
+        final converted = promptBlockFromLegacy(
           v1(
-            placement: PromptBlockPlacementPolicy(anchor: anchor),
-            priority: const PromptBlockPriorityPolicy(
+            placement: LegacyPromptBlockPlacementPolicy(anchor: anchor),
+            priority: const LegacyPromptBlockPriorityPolicy(
               sortOrder: 7,
               injectionOrder: 42,
             ),
@@ -187,8 +190,8 @@ void main() {
     });
 
     test('a null injectionOrder stays null on both sides', () {
-      final converted = promptBlockV1ToV2(
-        v1(priority: const PromptBlockPriorityPolicy(sortOrder: 3)),
+      final converted = promptBlockFromLegacy(
+        v1(priority: const LegacyPromptBlockPriorityPolicy(sortOrder: 3)),
       );
       expect(converted.priority.injectionOrder, isNull);
       expect(converted.placement.injectionOrder, isNull);
@@ -198,32 +201,32 @@ void main() {
 
   group('field mapping (compat matrix section 2)', () {
     test('all five policy objects away from their defaults survive', () {
-      final converted = promptBlockV1ToV2(
+      final converted = promptBlockFromLegacy(
         v1(
           id: 'block-9',
           promptProfileId: 'profile-9',
-          kind: PromptBlockKind.authorNote,
+          kind: LegacyPromptBlockKind.authorNote,
           name: 'Author note',
           enabled: false,
           content: 'body text',
           role: 'assistant',
-          placement: const PromptBlockPlacementPolicy(
+          placement: const LegacyPromptBlockPlacementPolicy(
             anchor: 'authorNote',
             injectionPosition: 1,
             depth: 2,
           ),
-          activation: const PromptBlockActivationPolicy(
+          activation: const LegacyPromptBlockActivationPolicy(
             generationTriggers: <String>['chat', 'continue'],
           ),
-          priority: const PromptBlockPriorityPolicy(
+          priority: const LegacyPromptBlockPriorityPolicy(
             sortOrder: 11,
             injectionOrder: 12,
           ),
-          protection: const PromptBlockProtectionPolicy(
+          protection: const LegacyPromptBlockProtectionPolicy(
             locked: true,
             forbidOverride: true,
           ),
-          provenance: const PromptBlockProvenance(
+          provenance: const LegacyPromptBlockProvenance(
             source: 'import',
             identifier: 'st:authorNote',
             extension: true,
@@ -250,7 +253,7 @@ void main() {
     });
 
     test('the serialized form stamps schemaVersion 2', () {
-      final json = promptBlockV1ToV2(v1()).toJson();
+      final json = promptBlockFromLegacy(v1()).toJson();
       expect(json['schemaVersion'], 2);
     });
   });
@@ -264,8 +267,8 @@ void main() {
         'someForkOnlyField': <String, dynamic>{'nested': 1},
         'anotherOddity': 'kept',
       };
-      final converted = promptBlockV1ToV2(
-        PromptBlock.fromJson(raw),
+      final converted = promptBlockFromLegacy(
+        LegacyPromptBlock.fromJson(raw),
         rawJson: raw,
       );
 
@@ -288,8 +291,8 @@ void main() {
         'protectionPolicy': <String, dynamic>{'locked': false},
         'provenance': <String, dynamic>{'source': 'app'},
       };
-      final converted = promptBlockV1ToV2(
-        PromptBlock.fromJson(raw),
+      final converted = promptBlockFromLegacy(
+        LegacyPromptBlock.fromJson(raw),
         rawJson: raw,
       );
       expect(converted.extensions, isEmpty);
@@ -304,8 +307,8 @@ void main() {
         'name': 'block',
         'isMarker': true,
       };
-      final converted = promptBlockV1ToV2(
-        PromptBlock.fromJson(raw),
+      final converted = promptBlockFromLegacy(
+        LegacyPromptBlock.fromJson(raw),
         rawJson: raw,
       );
       expect(converted.extensions, isEmpty);
@@ -314,21 +317,21 @@ void main() {
     });
 
     test('no raw json means no extensions rather than a crash', () {
-      expect(promptBlockV1ToV2(v1()).extensions, isEmpty);
+      expect(promptBlockFromLegacy(v1()).extensions, isEmpty);
     });
   });
 
   group('list conversion', () {
     test('order is preserved and raw json is matched positionally', () {
-      final blocks = <PromptBlock>[
-        v1(id: 'a', kind: PromptBlockKind.systemPrompt),
-        v1(id: 'b', kind: PromptBlockKind.marker),
+      final blocks = <LegacyPromptBlock>[
+        v1(id: 'a', kind: LegacyPromptBlockKind.systemPrompt),
+        v1(id: 'b', kind: LegacyPromptBlockKind.marker),
       ];
       final raws = <Map<String, dynamic>>[
         <String, dynamic>{'id': 'a', 'extraA': 1},
         <String, dynamic>{'id': 'b', 'extraB': 2},
       ];
-      final converted = promptBlocksV1ToV2(blocks, rawJson: raws);
+      final converted = promptBlocksFromLegacy(blocks, rawJson: raws);
 
       expect(converted.map((b) => b.id).toList(), <String>['a', 'b']);
       expect(
@@ -344,8 +347,8 @@ void main() {
     });
 
     test('a shorter rawJson list does not throw', () {
-      final converted = promptBlocksV1ToV2(
-        <PromptBlock>[v1(id: 'a'), v1(id: 'b')],
+      final converted = promptBlocksFromLegacy(
+        <LegacyPromptBlock>[v1(id: 'a'), v1(id: 'b')],
         rawJson: <Map<String, dynamic>>[
           <String, dynamic>{'id': 'a'},
         ],

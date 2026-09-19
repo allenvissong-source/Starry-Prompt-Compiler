@@ -1,6 +1,6 @@
 library;
 
-import '../models/prompt_block_v2.dart';
+import '../models/prompt_block.dart';
 import '../models/prompt_manager.dart';
 
 /// V1 to V2 prompt block conversion.
@@ -18,7 +18,7 @@ import '../models/prompt_manager.dart';
 /// Reserved namespace for V1 keys this version does not model.
 const String kLegacyV1ExtensionNamespace = 'legacy_v1';
 
-/// Keys the V1 `PromptBlock` shape owns. Anything outside this set is unknown
+/// Keys the V1 `LegacyPromptBlock` shape owns. Anything outside this set is unknown
 /// and is preserved under `extensions.legacy_v1` rather than dropped.
 const Set<String> _knownV1BlockKeys = <String>{
   'id',
@@ -39,13 +39,13 @@ const Set<String> _knownV1BlockKeys = <String>{
   'isMarker',
 };
 
-/// Converts one V1 [PromptBlock] into its V2 form.
+/// Converts one V1 [LegacyPromptBlock] into its V2 form.
 ///
 /// [rawJson] is the block's original JSON when available. It is used only to
 /// recover keys the V1 model itself drops on parse (§7) — the typed fields are
 /// read from [block], not re-parsed.
-PromptBlockV2 promptBlockV1ToV2(
-  PromptBlock block, {
+PromptBlock promptBlockFromLegacy(
+  LegacyPromptBlock block, {
   Map<String, dynamic>? rawJson,
 }) {
   final extensions = <String, dynamic>{};
@@ -54,7 +54,7 @@ PromptBlockV2 promptBlockV1ToV2(
     extensions[kLegacyV1ExtensionNamespace] = legacy;
   }
 
-  return PromptBlockV2(
+  return PromptBlock(
     id: block.id,
     promptProfileId: block.promptProfileId,
     // §3: every V1 enum value becomes "core:<v1-name>". `kind.name` is the
@@ -67,24 +67,24 @@ PromptBlockV2 promptBlockV1ToV2(
     role: block.role,
     // §4.1: verbatim copy, nulls preserved. No normalisation, no discriminator.
     // §4.2: the injectionOrder mirror is unconditional.
-    placement: PromptBlockPlacementV2(
+    placement: PromptBlockPlacement(
       anchor: block.placementPolicy.anchor,
       injectionPosition: block.placementPolicy.injectionPosition,
       depth: block.placementPolicy.depth,
       injectionOrder: block.priorityPolicy.injectionOrder,
     ),
-    activation: PromptBlockActivationV2(
+    activation: PromptBlockActivation(
       generationTriggers: block.activationPolicy.generationTriggers,
     ),
-    priority: PromptBlockPriorityV2(
+    priority: PromptBlockPriority(
       sortOrder: block.priorityPolicy.sortOrder,
       injectionOrder: block.priorityPolicy.injectionOrder,
     ),
-    protection: PromptBlockProtectionV2(
+    protection: PromptBlockProtection(
       locked: block.protectionPolicy.locked,
       forbidOverride: block.protectionPolicy.forbidOverride,
     ),
-    provenance: PromptBlockProvenanceV2(
+    provenance: PromptBlockProvenance(
       source: block.provenance.source,
       identifier: block.provenance.identifier,
       extension: block.provenance.extension,
@@ -94,13 +94,13 @@ PromptBlockV2 promptBlockV1ToV2(
 }
 
 /// Converts a whole V1 block list.
-List<PromptBlockV2> promptBlocksV1ToV2(
-  List<PromptBlock> blocks, {
+List<PromptBlock> promptBlocksFromLegacy(
+  List<LegacyPromptBlock> blocks, {
   List<Map<String, dynamic>>? rawJson,
 }) {
-  return List<PromptBlockV2>.unmodifiable(<PromptBlockV2>[
+  return List<PromptBlock>.unmodifiable(<PromptBlock>[
     for (var i = 0; i < blocks.length; i++)
-      promptBlockV1ToV2(
+      promptBlockFromLegacy(
         blocks[i],
         rawJson: rawJson != null && i < rawJson.length ? rawJson[i] : null,
       ),

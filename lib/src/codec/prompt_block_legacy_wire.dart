@@ -17,7 +17,7 @@
 // server, and on other clients still running the old build.
 //
 // The failure mode that would cause is worth naming precisely, because it is
-// not a loud one. `PromptBlock.fromJson` resolved an unknown kind with
+// not a loud one. `LegacyPromptBlock.fromJson` resolved an unknown kind with
 // `orElse: () => custom`, so an older client reading a namespaced
 // "core:systemPrompt" would not fail — it would silently file the block as
 // `custom`. A system prompt quietly demoted to a custom block, with nothing in
@@ -27,8 +27,8 @@
 // These two functions are inverses and are the only place that knows the legacy
 // spelling. Everything above them speaks V2.
 
-import '../models/prompt_block_v2.dart';
-import 'prompt_block_v1_to_v2.dart' show kLegacyV1ExtensionNamespace;
+import '../models/prompt_block.dart';
+import 'prompt_block_from_legacy.dart' show kLegacyV1ExtensionNamespace;
 
 /// Keys the legacy wire shape owns at the top level of a block object.
 const Set<String> _legacyWireKeys = <String>{
@@ -56,7 +56,7 @@ const Set<String> _legacyWireKeys = <String>{
 /// Unrecognised top-level keys are preserved under `extensions.legacy_v1` so a
 /// field written by a fork, or by a future version, survives a read/write cycle
 /// through this build instead of being dropped.
-PromptBlockV2 promptBlockFromLegacyJson(Map<String, dynamic> json) {
+PromptBlock promptBlockFromLegacyJson(Map<String, dynamic> json) {
   final placement = _asMap(json['placementPolicy']);
   final priority = _asMap(json['priorityPolicy']);
 
@@ -66,7 +66,7 @@ PromptBlockV2 promptBlockFromLegacyJson(Map<String, dynamic> json) {
     unknown[entry.key] = entry.value;
   }
 
-  return PromptBlockV2(
+  return PromptBlock(
     id: (json['id'] ?? '').toString(),
     promptProfileId: _stringOrNull(json['promptProfileId']),
     // A bare legacy name becomes `core:<name>`; an unrecognised one lands on
@@ -76,7 +76,7 @@ PromptBlockV2 promptBlockFromLegacyJson(Map<String, dynamic> json) {
     enabled: json['enabled'] != false,
     content: (json['content'] ?? '').toString(),
     role: _stringOrNull(json['role']),
-    placement: PromptBlockPlacementV2(
+    placement: PromptBlockPlacement(
       anchor: _stringOrNull(placement['anchor']),
       injectionPosition: _intOrNull(placement['injectionPosition']),
       // V1 accepted either spelling on read; the newer one wins when both are
@@ -84,23 +84,23 @@ PromptBlockV2 promptBlockFromLegacyJson(Map<String, dynamic> json) {
       depth: _intOrNull(placement['depth'] ?? placement['injectionDepth']),
       injectionOrder: _intOrNull(priority['injectionOrder']),
     ),
-    activation: PromptBlockActivationV2(
+    activation: PromptBlockActivation(
       generationTriggers: _stringList(
         _asMap(json['activationPolicy'])['generationTriggers'] ??
             _asMap(json['activationPolicy'])['injectionTrigger'],
       ),
     ),
-    priority: PromptBlockPriorityV2(
+    priority: PromptBlockPriority(
       sortOrder: _intOrNull(priority['sortOrder'] ?? priority['order']) ?? 0,
       injectionOrder: _intOrNull(priority['injectionOrder']),
     ),
-    protection: PromptBlockProtectionV2(
+    protection: PromptBlockProtection(
       locked: _asMap(json['protectionPolicy'])['locked'] == true,
       forbidOverride:
           _asMap(json['protectionPolicy'])['forbidOverride'] == true ||
           _asMap(json['protectionPolicy'])['forbid_overrides'] == true,
     ),
-    provenance: PromptBlockProvenanceV2(
+    provenance: PromptBlockProvenance(
       source: (_asMap(json['provenance'])['source'] ?? 'local').toString(),
       identifier: _stringOrNull(_asMap(json['provenance'])['identifier']),
       extension: _asMap(json['provenance'])['extension'] == true,
@@ -118,7 +118,7 @@ PromptBlockV2 promptBlockFromLegacyJson(Map<String, dynamic> json) {
 /// rewritten by this build stays readable by a client that has not migrated.
 /// Keys recovered into `extensions.legacy_v1` on the way in are spread back to
 /// the top level on the way out, which is what closes the round trip.
-Map<String, dynamic> promptBlockToLegacyJson(PromptBlockV2 block) {
+Map<String, dynamic> promptBlockToLegacyJson(PromptBlock block) {
   final legacy = block.extensions[kLegacyV1ExtensionNamespace];
   return <String, dynamic>{
     if (legacy is Map)

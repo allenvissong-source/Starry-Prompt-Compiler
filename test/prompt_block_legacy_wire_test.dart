@@ -9,7 +9,7 @@ import 'package:test/test.dart';
 /// migrated.
 ///
 /// The hazard being guarded is quiet, which is why it is worth a suite of its
-/// own: `PromptBlock.fromJson` resolved an unknown kind with
+/// own: `LegacyPromptBlock.fromJson` resolved an unknown kind with
 /// `orElse: () => custom`. An old client handed a namespaced
 /// `"core:systemPrompt"` would not throw — it would silently file the block as
 /// `custom`. So "the write still parses" is not the bar; "the write is
@@ -66,9 +66,7 @@ void main() {
         'enabled': true,
         'content': '',
         'placementPolicy': <String, dynamic>{'anchor': 'relative'},
-        'activationPolicy': <String, dynamic>{
-          'generationTriggers': <String>[],
-        },
+        'activationPolicy': <String, dynamic>{'generationTriggers': <String>[]},
         'priorityPolicy': <String, dynamic>{'sortOrder': 0},
         'protectionPolicy': <String, dynamic>{
           'locked': false,
@@ -86,7 +84,7 @@ void main() {
     test('every one of the 15 kinds survives as its bare name', () {
       // The namespace must never reach the wire: a namespaced kind read by an
       // unmigrated client silently becomes `custom`.
-      for (final kind in PromptBlockKind.values) {
+      for (final kind in LegacyPromptBlockKind.values) {
         final wire = promptBlockToLegacyJson(
           promptBlockFromLegacyJson(<String, dynamic>{
             'id': 'b',
@@ -116,9 +114,8 @@ void main() {
     });
 
     test('an unknown wire key survives the round trip', () {
-      final original = legacyJson()..['someForkOnlyField'] = <String, int>{
-        'nested': 1,
-      };
+      final original = legacyJson()
+        ..['someForkOnlyField'] = <String, int>{'nested': 1};
 
       final restored = promptBlockToLegacyJson(
         promptBlockFromLegacyJson(original),
@@ -171,7 +168,7 @@ void main() {
       final json = legacyJson();
 
       final viaWire = promptBlockFromLegacyJson(json);
-      final viaModel = promptBlockV1ToV2(PromptBlock.fromJson(json));
+      final viaModel = promptBlockFromLegacy(LegacyPromptBlock.fromJson(json));
 
       expect(viaWire.toJson(), viaModel.toJson());
     });

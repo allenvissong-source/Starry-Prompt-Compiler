@@ -49,7 +49,7 @@ void main() {
       worldInfoEntries: const <WorldInfoEntry>[],
       groupedWorldInfoEntries:
           const <WorldInfoPosition, List<WorldInfoEntry>>{},
-      resolvedPromptBlocks: const <PromptBlockV2>[],
+      resolvedPromptBlocks: const <PromptBlock>[],
       promptContext: const SessionPromptContext(),
       resolvedVariables: const <String, dynamic>{'user_name': 'Traveler'},
     );
