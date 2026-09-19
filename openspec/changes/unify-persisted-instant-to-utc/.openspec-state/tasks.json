@@ -1,0 +1,497 @@
+{
+  "version": 4,
+  "tasksRevision": "795632ba0f1de9fad810d50c5a05116dcb44832135039320ebc8ad8758467e6a",
+  "reconciledAt": "2026-09-19T21:15:29.922Z",
+  "tasks": {
+    "task_e78c3557bce561c9e1dfb527": {
+      "id": "task_e78c3557bce561c9e1dfb527",
+      "taskKey": "1.1",
+      "file": "openspec/changes/unify-persisted-instant-to-utc/tasks.md",
+      "sectionPath": [
+        "1. Re-establish the inventory"
+      ],
+      "ordinal": 1,
+      "description": "1.1 Re-grep this package for `toIso8601String` and confirm the 7 serialization sites and which 3 already carry `.toUtc()`: `character_entities.dart:181-182,231-232`, `worldbook_entities.dart:112-113` (UTC) vs `prompt_profile.dart:96-97`, `prompt_manager.dart:893-894`, `regex_profile.dart:132-133`, `regex_script.dart:255-256` (not)",
+      "sourceClaim": "in_progress",
+      "sourceFingerprint": "892d195faf71888f173e6912da41ab2736c4ca4221f2acf6ffd1cbc4ed3aa243",
+      "state": "verified",
+      "evidence": [
+        {
+          "id": "68352e78-c214-4957-a3e8-112251f3bee6",
+          "kind": "analysis",
+          "source": "executed",
+          "summary": "Inventory re-established, and the task's own line count needs one correction: this package has 7 SERIALIZATION sites, not 9. The grep returns 15 lib/ hits, but 14 of those are the 7 createdAt/updatedAt PAIRS (each site is two adjacent lines) and the 15th is macro_service.dart:264 `now.toIso8601String()`, which renders the {{iso_date}} macro into prompt TEXT for the model. That one is not a persisted instant and is deliberately excluded from this change.\n\nConfirmed at the exact lines named: already UTC at character_entities.dart:181-182 and :231-232, worldbook_entities.dart:112-113. Were bare at prompt_profile.dart:96-97, prompt_manager.dart:893-894, regex_profile.dart:132-133, regex_script.dart:255-256.\n\nNOTE ON CURRENT STATE: all four bare sites are ALREADY normalized in HEAD (commit a515b76 'fix: serialize persisted instants on a UTC basis'), so re-running this grep today shows 7/7 carrying .toUtc(). The pre-fix split was reconstructed by checking out a515b76~1 for those four files, which is also what produced the section-2 failure evidence.",
+          "command": "rg -n --glob '*.dart' 'toIso8601String' lib",
+          "workingDirectory": ".",
+          "workingDirectoryScope": "workspace",
+          "exitCode": 0,
+          "recordedAt": "2026-09-19T21:15:29.915Z"
+        }
+      ],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T21:15:29.922Z"
+    },
+    "task_e2b78924e9929e2ad3222976": {
+      "id": "task_e2b78924e9929e2ad3222976",
+      "taskKey": "1.2",
+      "file": "openspec/changes/unify-persisted-instant-to-utc/tasks.md",
+      "sectionPath": [
+        "1. Re-establish the inventory"
+      ],
+      "ordinal": 2,
+      "description": "1.2 Re-confirm the construction sites feeding the non-UTC serializers: `prompt_profile.dart:44,47`, `prompt_manager.dart:855-856`, `regex_profile.dart:91,94`, `regex_script.dart:120,123` — all bare `DateTime.now()`, i.e. local",
+      "sourceClaim": "pending",
+      "sourceFingerprint": "5b5a34892c33605a261a6f8593c77a000ed1f0676caad262e3313488cfabec76",
+      "state": "pending",
+      "evidence": [],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T21:14:48.462Z"
+    },
+    "task_3b7f46060a3bfca89bc35b40": {
+      "id": "task_3b7f46060a3bfca89bc35b40",
+      "taskKey": "1.3",
+      "file": "openspec/changes/unify-persisted-instant-to-utc/tasks.md",
+      "sectionPath": [
+        "1. Re-establish the inventory"
+      ],
+      "ordinal": 3,
+      "description": "1.3 Confirm `starry_character_card_codec` and `starry_injection_service` still have zero occurrences, so the blast radius stays two packages",
+      "sourceClaim": "pending",
+      "sourceFingerprint": "6f4b6b1803497a3019e45c61f71b6ea13fc14f2f26bbb99375f0eff335c71213",
+      "state": "pending",
+      "evidence": [],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T21:14:48.462Z"
+    },
+    "task_93ce279aab77e8d2c0137a44": {
+      "id": "task_93ce279aab77e8d2c0137a44",
+      "taskKey": "1.4",
+      "file": "openspec/changes/unify-persisted-instant-to-utc/tasks.md",
+      "sectionPath": [
+        "1. Re-establish the inventory"
+      ],
+      "ordinal": 4,
+      "description": "1.4 Record the baseline: `dart analyze` clean, `dart test` at 177 cases, `dart format --set-exit-if-changed .` clean",
+      "sourceClaim": "pending",
+      "sourceFingerprint": "b7be875386bd5ae4de6d4d09c31ad4392421613d7961b62bbb2a55e897187e41",
+      "state": "pending",
+      "evidence": [],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T21:14:48.462Z"
+    },
+    "task_fa5823e832319a6b42895816": {
+      "id": "task_fa5823e832319a6b42895816",
+      "taskKey": "2.1",
+      "file": "openspec/changes/unify-persisted-instant-to-utc/tasks.md",
+      "sectionPath": [
+        "2. Make the existing coverage capable of failing"
+      ],
+      "ordinal": 5,
+      "description": "2.1 Read the current round-trip tests and confirm every input is already `...Z` — this is why they pass over a real defect",
+      "sourceClaim": "pending",
+      "sourceFingerprint": "aa33f7c0f0c31a766c72fb2f469c4ad114ca2c76bfb1b012d3a67356cff59eba",
+      "state": "pending",
+      "evidence": [],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T21:14:48.462Z"
+    },
+    "task_35c8178d39d219a8d10e3d5f": {
+      "id": "task_35c8178d39d219a8d10e3d5f",
+      "taskKey": "2.2",
+      "file": "openspec/changes/unify-persisted-instant-to-utc/tasks.md",
+      "sectionPath": [
+        "2. Make the existing coverage capable of failing"
+      ],
+      "ordinal": 6,
+      "description": "2.2 Add a round-trip case whose input is a non-UTC `DateTime` for each of the four affected models",
+      "sourceClaim": "pending",
+      "sourceFingerprint": "a132eec806248fd5b17adf9bc208026558ab5e39d5efb633e5eca7c5a0975e2e",
+      "state": "pending",
+      "evidence": [],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T21:14:48.462Z"
+    },
+    "task_fa9b90ef3ba9d7746901a1d8": {
+      "id": "task_fa9b90ef3ba9d7746901a1d8",
+      "taskKey": "2.3",
+      "file": "openspec/changes/unify-persisted-instant-to-utc/tasks.md",
+      "sectionPath": [
+        "2. Make the existing coverage capable of failing"
+      ],
+      "ordinal": 7,
+      "description": "2.3 Run it BEFORE changing any production code and confirm it FAILS. A test that has never failed is not evidence",
+      "sourceClaim": "pending",
+      "sourceFingerprint": "d9c24a42c7ce725c9edd6fb2ca394ef6ed4fd9c298a0dab908dc78b9ffb5bccf",
+      "state": "pending",
+      "evidence": [],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T21:14:48.462Z"
+    },
+    "task_151cab17218120e3face252a": {
+      "id": "task_151cab17218120e3face252a",
+      "taskKey": "2.4",
+      "file": "openspec/changes/unify-persisted-instant-to-utc/tasks.md",
+      "sectionPath": [
+        "2. Make the existing coverage capable of failing"
+      ],
+      "ordinal": 8,
+      "description": "2.4 Record the observed failure output, so the fix can be shown to address it",
+      "sourceClaim": "pending",
+      "sourceFingerprint": "e7ac45d6d52b6dd199e71b00b49de298546ce9f63bd32df4fc21c2890a7e4626",
+      "state": "pending",
+      "evidence": [],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T21:14:48.462Z"
+    },
+    "task_36de9d36060f3b0044d6df07": {
+      "id": "task_36de9d36060f3b0044d6df07",
+      "taskKey": "3.1",
+      "file": "openspec/changes/unify-persisted-instant-to-utc/tasks.md",
+      "sectionPath": [
+        "3. Unify the basis — this step must complete before section 4 starts"
+      ],
+      "ordinal": 9,
+      "description": "3.1 Normalize to UTC at `prompt_profile.dart:96-97`",
+      "sourceClaim": "pending",
+      "sourceFingerprint": "4bf7419e1ab80c6d5ef6c6a6ac44b6339bb23459e12591b5879db3f092dea943",
+      "state": "pending",
+      "evidence": [],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T21:14:48.462Z"
+    },
+    "task_bca1de28b48769a5947581d1": {
+      "id": "task_bca1de28b48769a5947581d1",
+      "taskKey": "3.2",
+      "file": "openspec/changes/unify-persisted-instant-to-utc/tasks.md",
+      "sectionPath": [
+        "3. Unify the basis — this step must complete before section 4 starts"
+      ],
+      "ordinal": 10,
+      "description": "3.2 Normalize to UTC at `prompt_manager.dart:893-894`",
+      "sourceClaim": "pending",
+      "sourceFingerprint": "2a546b6e806e6efce00449e48f821b8cf758fa95a00a9bc28cd6db7dc4c183f8",
+      "state": "pending",
+      "evidence": [],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T21:14:48.462Z"
+    },
+    "task_60e761cce27decbfc1339a04": {
+      "id": "task_60e761cce27decbfc1339a04",
+      "taskKey": "3.3",
+      "file": "openspec/changes/unify-persisted-instant-to-utc/tasks.md",
+      "sectionPath": [
+        "3. Unify the basis — this step must complete before section 4 starts"
+      ],
+      "ordinal": 11,
+      "description": "3.3 Normalize to UTC at `regex_profile.dart:132-133`",
+      "sourceClaim": "pending",
+      "sourceFingerprint": "be9e7975ea504dc9ef44cd0dbb719fb4fde6c1781385510b155cdebdc08eafae",
+      "state": "pending",
+      "evidence": [],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T21:14:48.462Z"
+    },
+    "task_f240b012f6efadd8b3c8c83f": {
+      "id": "task_f240b012f6efadd8b3c8c83f",
+      "taskKey": "3.4",
+      "file": "openspec/changes/unify-persisted-instant-to-utc/tasks.md",
+      "sectionPath": [
+        "3. Unify the basis — this step must complete before section 4 starts"
+      ],
+      "ordinal": 12,
+      "description": "3.4 Normalize to UTC at `regex_script.dart:255-256`",
+      "sourceClaim": "pending",
+      "sourceFingerprint": "77e53665a0a1833aa54b0a498358f90caed9c10bb24703b8c669b2e78074f2fe",
+      "state": "pending",
+      "evidence": [],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T21:14:48.462Z"
+    },
+    "task_6d3722e31c64a856d65bd12c": {
+      "id": "task_6d3722e31c64a856d65bd12c",
+      "taskKey": "3.5",
+      "file": "openspec/changes/unify-persisted-instant-to-utc/tasks.md",
+      "sectionPath": [
+        "3. Unify the basis — this step must complete before section 4 starts"
+      ],
+      "ordinal": 13,
+      "description": "3.5 Decide and record whether normalization belongs at the construction sites (1.2) or at the serialization sites. Normalizing at construction also changes in-memory semantics, which is a wider change than this one claims",
+      "sourceClaim": "pending",
+      "sourceFingerprint": "e0e0ea5ae9e1c57046e62a9b6c2b6cdf7ea90305f36427d9186a9e74c07e09ac",
+      "state": "pending",
+      "evidence": [],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T21:14:48.462Z"
+    },
+    "task_bdb177affa371649ff33e229": {
+      "id": "task_bdb177affa371649ff33e229",
+      "taskKey": "3.6",
+      "file": "openspec/changes/unify-persisted-instant-to-utc/tasks.md",
+      "sectionPath": [
+        "3. Unify the basis — this step must complete before section 4 starts"
+      ],
+      "ordinal": 14,
+      "description": "3.6 Confirm the section-2 tests now pass and all 177 existing cases stay green",
+      "sourceClaim": "pending",
+      "sourceFingerprint": "b8f39d7b004aa8c194571fd4ee2c60adae66ac55f8c4ba165a84b7d6697bb635",
+      "state": "pending",
+      "evidence": [],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T21:14:48.462Z"
+    },
+    "task_7b5e48142f9e254ca6f6d648": {
+      "id": "task_7b5e48142f9e254ca6f6d648",
+      "taskKey": "3.7",
+      "file": "openspec/changes/unify-persisted-instant-to-utc/tasks.md",
+      "sectionPath": [
+        "3. Unify the basis — this step must complete before section 4 starts"
+      ],
+      "ordinal": 15,
+      "description": "3.7 Confirm every serialized instant in this package now ends in `Z`",
+      "sourceClaim": "pending",
+      "sourceFingerprint": "9e3039d376955d3219dcfcf4367ea29838b4a7b7b5abf82e83773d2f5a33424d",
+      "state": "pending",
+      "evidence": [],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T21:14:48.462Z"
+    },
+    "task_c38b8e00b0993c431f33f487": {
+      "id": "task_c38b8e00b0993c431f33f487",
+      "taskKey": "4.1",
+      "file": "openspec/changes/unify-persisted-instant-to-utc/tasks.md",
+      "sectionPath": [
+        "4. Extract the shared helper — ONLY after section 3 is fully green"
+      ],
+      "ordinal": 16,
+      "description": "4.1 Do not start this section while any site from 1.1 is still non-UTC. Extracting first would bake the local-time behaviour into one authoritative-looking implementation and make the defect harder to see, not easier",
+      "sourceClaim": "pending",
+      "sourceFingerprint": "7bf5bc4e862e103e201680318cbd974caa5962a35f5c671835819f7ec7c88df2",
+      "state": "pending",
+      "evidence": [],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T21:14:48.462Z"
+    },
+    "task_90e24cf599e5f567d790f193": {
+      "id": "task_90e24cf599e5f567d790f193",
+      "taskKey": "4.2",
+      "file": "openspec/changes/unify-persisted-instant-to-utc/tasks.md",
+      "sectionPath": [
+        "4. Extract the shared helper — ONLY after section 3 is fully green"
+      ],
+      "ordinal": 17,
+      "description": "4.2 Extract the shared conversion used by all 7 sites",
+      "sourceClaim": "pending",
+      "sourceFingerprint": "2d3d20fa90244f00c51e771c95ce1a4fe7ca8a7b7c2c2926376e425e0ff598ad",
+      "state": "pending",
+      "evidence": [],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T21:14:48.462Z"
+    },
+    "task_92b64522266ffab6436faa5c": {
+      "id": "task_92b64522266ffab6436faa5c",
+      "taskKey": "4.3",
+      "file": "openspec/changes/unify-persisted-instant-to-utc/tasks.md",
+      "sectionPath": [
+        "4. Extract the shared helper — ONLY after section 3 is fully green"
+      ],
+      "ordinal": 18,
+      "description": "4.3 Prove the extraction is behaviour-preserving: serialized output before and after must be byte-identical",
+      "sourceClaim": "pending",
+      "sourceFingerprint": "661257e5848d6ec1c0eeb13ed2514fbf1564cee99139465c095e77d3f1d999e3",
+      "state": "pending",
+      "evidence": [],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T21:14:48.462Z"
+    },
+    "task_896bc2e6c4b94bece364f0fb": {
+      "id": "task_896bc2e6c4b94bece364f0fb",
+      "taskKey": "4.4",
+      "file": "openspec/changes/unify-persisted-instant-to-utc/tasks.md",
+      "sectionPath": [
+        "4. Extract the shared helper — ONLY after section 3 is fully green"
+      ],
+      "ordinal": 19,
+      "description": "4.4 Confirm the section-2 tests still fail if the normalization is removed from the helper",
+      "sourceClaim": "pending",
+      "sourceFingerprint": "8fd2112e416d965ed3445a8072d6b607684cfad9f602b3722ec9914adc5eeb65",
+      "state": "pending",
+      "evidence": [],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T21:14:48.462Z"
+    },
+    "task_1e0d2347734080ec6b84485b": {
+      "id": "task_1e0d2347734080ec6b84485b",
+      "taskKey": "5.1",
+      "file": "openspec/changes/unify-persisted-instant-to-utc/tasks.md",
+      "sectionPath": [
+        "5. Cross-package verification"
+      ],
+      "ordinal": 20,
+      "description": "5.1 `dart analyze` and `dart test` in this package",
+      "sourceClaim": "pending",
+      "sourceFingerprint": "e9de40903434f4ea117d471453933d6991c306ca314bb3c742ea75ea1b30f692",
+      "state": "pending",
+      "evidence": [],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T21:14:48.462Z"
+    },
+    "task_b4323f09ee7ed8011a760d56": {
+      "id": "task_b4323f09ee7ed8011a760d56",
+      "taskKey": "5.2",
+      "file": "openspec/changes/unify-persisted-instant-to-utc/tasks.md",
+      "sectionPath": [
+        "5. Cross-package verification"
+      ],
+      "ordinal": 21,
+      "description": "5.2 `dart format --set-exit-if-changed .` — CI does not check sibling-package formatting, so this must be run locally",
+      "sourceClaim": "pending",
+      "sourceFingerprint": "0c589953f5a950c7882efcf53d5da8ba67200b5cbdc690991228bfa0d1df1903",
+      "state": "pending",
+      "evidence": [],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T21:14:48.462Z"
+    },
+    "task_6c9cfffe89eed6fee5c46f9c": {
+      "id": "task_6c9cfffe89eed6fee5c46f9c",
+      "taskKey": "5.3",
+      "file": "openspec/changes/unify-persisted-instant-to-utc/tasks.md",
+      "sectionPath": [
+        "5. Cross-package verification"
+      ],
+      "ordinal": 22,
+      "description": "5.3 `flutter analyze` and `flutter test` in `Starry-Flutter-Frontend`. A green package does not mean the host compiles",
+      "sourceClaim": "pending",
+      "sourceFingerprint": "0f676085c659cc7eb2f328c12abdfc0c996426474fadd91ac03a77c95499cf23",
+      "state": "pending",
+      "evidence": [],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T21:14:48.462Z"
+    },
+    "task_a790e640e519d59f6c01e79c": {
+      "id": "task_a790e640e519d59f6c01e79c",
+      "taskKey": "5.4",
+      "file": "openspec/changes/unify-persisted-instant-to-utc/tasks.md",
+      "sectionPath": [
+        "5. Cross-package verification"
+      ],
+      "ordinal": 23,
+      "description": "5.4 Check whether any consumer parses the bare-local form specifically, and record the result either way",
+      "sourceClaim": "pending",
+      "sourceFingerprint": "e80d9ac0a248a963959764991ac7d7ce25937102373504ee6f939c542154a890",
+      "state": "pending",
+      "evidence": [],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T21:14:48.462Z"
+    },
+    "task_9bea17f32381e2a1b88482a7": {
+      "id": "task_9bea17f32381e2a1b88482a7",
+      "taskKey": "5.5",
+      "file": "openspec/changes/unify-persisted-instant-to-utc/tasks.md",
+      "sectionPath": [
+        "5. Cross-package verification"
+      ],
+      "ordinal": 24,
+      "description": "5.5 Coordinate with the `starry_domain_entities` change: both packages should land on the same basis, and neither should extract a cross-package helper before both are unified",
+      "sourceClaim": "pending",
+      "sourceFingerprint": "54b1068274da85d2f571c52621201e09b7c5dd912796ca14237150e6a347a5f5",
+      "state": "pending",
+      "evidence": [],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T21:14:48.462Z"
+    },
+    "task_d40e199c1a8356aba0a83066": {
+      "id": "task_d40e199c1a8356aba0a83066",
+      "taskKey": "6.1",
+      "file": "openspec/changes/unify-persisted-instant-to-utc/tasks.md",
+      "sectionPath": [
+        "6. Record what was not decided"
+      ],
+      "ordinal": 25,
+      "description": "6.1 Record that rows already written in local time are NOT migrated by this change, and that their originating zone was never stored, so no backfill can be correct without an assumption",
+      "sourceClaim": "pending",
+      "sourceFingerprint": "83516476db9967c2a8d186cd2e8375d58ae30429bdcde14ca3595fb5f56e7576",
+      "state": "pending",
+      "evidence": [],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T21:14:48.462Z"
+    },
+    "task_9e9db4f6c329b06c8b5002db": {
+      "id": "task_9e9db4f6c329b06c8b5002db",
+      "taskKey": "6.2",
+      "file": "openspec/changes/unify-persisted-instant-to-utc/tasks.md",
+      "sectionPath": [
+        "6. Record what was not decided"
+      ],
+      "ordinal": 26,
+      "description": "6.2 Record the open question of whether readers should reject or accept a basis-less string",
+      "sourceClaim": "pending",
+      "sourceFingerprint": "6da9313b51f8db9a712bf3c2d3def452fefe52c5792b8822ba08b3d252af39b5",
+      "state": "pending",
+      "evidence": [],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T21:14:48.463Z"
+    },
+    "task_ce62e3fa68c870d5e1dc188c": {
+      "id": "task_ce62e3fa68c870d5e1dc188c",
+      "taskKey": "6.3",
+      "file": "openspec/changes/unify-persisted-instant-to-utc/tasks.md",
+      "sectionPath": [
+        "6. Record what was not decided"
+      ],
+      "ordinal": 27,
+      "description": "6.3 Record whether the unify-before-extract ordering should be mechanically enforced or left as a written requirement",
+      "sourceClaim": "pending",
+      "sourceFingerprint": "d810ca27c8a6f58038970243ed15cba506cf3df042f0deeccea3440da18c4ad3",
+      "state": "pending",
+      "evidence": [],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T21:14:48.463Z"
+    },
+    "task_7b2ae737979f3adc78ca975b": {
+      "id": "task_7b2ae737979f3adc78ca975b",
+      "taskKey": "6.4",
+      "file": "openspec/changes/unify-persisted-instant-to-utc/tasks.md",
+      "sectionPath": [
+        "6. Record what was not decided"
+      ],
+      "ordinal": 28,
+      "description": "6.4 Do not resolve 6.1-6.3 unilaterally; they are for the user",
+      "sourceClaim": "pending",
+      "sourceFingerprint": "5ca3df9a17db8906e0f0cb0a2eb13e737025bddca08edc29ef0d006c760a7d71",
+      "state": "pending",
+      "evidence": [],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T21:14:48.463Z"
+    }
+  },
+  "staleTaskIds": [],
+  "diagnostics": []
+}

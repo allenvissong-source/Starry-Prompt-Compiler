@@ -1,0 +1,4 @@
+schema: spec-driven
+created: 2026-09-20
+goal: Make every serialized instant in the compiler use one time basis, before
+  any helper is extracted
