@@ -4,7 +4,9 @@
 //   lib/features/starry/domain/models/worldbook_entities.dart
 // No external dependencies (core Dart only). Byte-identical class/field
 // names to the Starry source so behavior_v1 goldens remain valid under
-// SUT=package.
+// SUT=package. The single import below is package-internal, added when the
+// persisted-instant conversion was extracted to one helper.
+import 'instant_storage.dart';
 
 class Worldbook {
   const Worldbook({
@@ -109,8 +111,8 @@ class Worldbook {
       'extensions': extensions,
       'is_system': isSystem,
       'visibility_scope': visibilityScope,
-      'created_at': createdAt.toUtc().toIso8601String(),
-      'updated_at': updatedAt.toUtc().toIso8601String(),
+      'created_at': instantToStorageString(createdAt),
+      'updated_at': instantToStorageString(updatedAt),
       if (includeEntries)
         'entries': entries.map((item) => item.toJson()).toList(),
     };

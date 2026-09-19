@@ -2,9 +2,12 @@
 //
 // Provenance: verbatim copy of
 //   lib/features/starry/domain/models/character_entities.dart
-// The source file has zero external imports (pure Dart data classes),
-// so no import rewriting is required. Class / enum / field names are
+// The source file had zero external imports (pure Dart data classes). The
+// single import below is package-internal, added when the persisted-instant
+// conversion was extracted to one helper. Class / enum / field names remain
 // byte-identical to the Starry source.
+import 'instant_storage.dart';
+
 class CharacterDepthPrompt {
   const CharacterDepthPrompt({
     required this.text,
@@ -178,8 +181,8 @@ class Character {
       'tags': tags,
       'is_system': isSystem,
       'visibility_scope': visibilityScope,
-      'created_at': createdAt.toUtc().toIso8601String(),
-      'updated_at': updatedAt.toUtc().toIso8601String(),
+      'created_at': instantToStorageString(createdAt),
+      'updated_at': instantToStorageString(updatedAt),
     };
   }
 }
@@ -228,8 +231,8 @@ class CharacterAuthorship {
       'id': id,
       'character_id': characterId,
       'creator_user_id': creatorUserId,
-      'created_at': createdAt.toUtc().toIso8601String(),
-      'updated_at': updatedAt.toUtc().toIso8601String(),
+      'created_at': instantToStorageString(createdAt),
+      'updated_at': instantToStorageString(updatedAt),
     };
   }
 }

@@ -8,6 +8,8 @@
 /// Based on SillyTavern's regex extension
 library;
 
+import 'instant_storage.dart';
+
 /// Where the regex script should be applied
 enum RegexPlacement {
   /// User input before sending
@@ -252,8 +254,8 @@ class RegexScript {
       'order': order,
       'characterId': characterId,
       'chatId': chatId,
-      'createdAt': createdAt.toUtc().toIso8601String(),
-      'updatedAt': updatedAt.toUtc().toIso8601String(),
+      'createdAt': instantToStorageString(createdAt),
+      'updatedAt': instantToStorageString(updatedAt),
     };
   }
 

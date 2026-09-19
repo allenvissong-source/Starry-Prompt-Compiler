@@ -6,6 +6,7 @@
 //   package:starry/features/prompt_lab/data/models/prompt_manager.dart
 //   -> 'prompt_manager.dart'
 // Byte-identical class / enum / field names.
+import 'instant_storage.dart';
 import 'prompt_manager.dart';
 
 class PromptProfileResource {
@@ -93,7 +94,7 @@ class PromptProfileResource {
     'blocks': resolvedBlocks.map((block) => block.toJson()).toList(),
     'isDefault': isDefault,
     'isBuiltIn': isBuiltIn,
-    'createdAt': createdAt.toUtc().toIso8601String(),
-    'updatedAt': updatedAt.toUtc().toIso8601String(),
+    'createdAt': instantToStorageString(createdAt),
+    'updatedAt': instantToStorageString(updatedAt),
   };
 }

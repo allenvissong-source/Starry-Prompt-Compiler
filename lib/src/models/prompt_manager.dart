@@ -2,9 +2,12 @@
 //
 // Provenance: verbatim copy of
 //   lib/features/prompt_lab/data/models/prompt_manager.dart
-// The source file has zero external imports (pure Dart data classes),
-// so no import rewriting is required. Class / enum / field names are
+// The source file had zero external imports (pure Dart data classes). The
+// single import below is package-internal, added when the persisted-instant
+// conversion was extracted to one helper. Class / enum / field names remain
 // byte-identical to the Starry source.
+import 'instant_storage.dart';
+
 /// Compatibility-era prompt section types used by prompt-lab editing and
 /// import/export adapters. Production runtime assembly uses PromptBlock ->
 /// ResolvedExecutionUnit -> PromptExecutionPlan rather than PromptSection.
@@ -890,8 +893,8 @@ class PromptManagerPreset {
     'name': name,
     'description': description,
     'config': config.toJson(),
-    'createdAt': createdAt.toUtc().toIso8601String(),
-    'updatedAt': updatedAt.toUtc().toIso8601String(),
+    'createdAt': instantToStorageString(createdAt),
+    'updatedAt': instantToStorageString(updatedAt),
     'isBuiltIn': isBuiltIn,
   };
 }

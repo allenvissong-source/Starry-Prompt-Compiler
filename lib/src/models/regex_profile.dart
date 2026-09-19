@@ -6,6 +6,7 @@
 //   package:starry/features/prompt_lab/data/models/regex_script.dart
 //   -> 'regex_script.dart'
 // Byte-identical class / enum / field names.
+import 'instant_storage.dart';
 import 'regex_script.dart';
 
 class RegexProfileSettingsResource {
@@ -129,8 +130,8 @@ class RegexProfileResource {
     'description': description,
     'settings': settings.toJson(),
     'isDefault': isDefault,
-    'createdAt': createdAt.toUtc().toIso8601String(),
-    'updatedAt': updatedAt.toUtc().toIso8601String(),
+    'createdAt': instantToStorageString(createdAt),
+    'updatedAt': instantToStorageString(updatedAt),
   };
 }
 
