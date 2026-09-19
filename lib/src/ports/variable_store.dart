@@ -56,12 +56,7 @@ abstract class VariableStore {
   dynamic getGlobal(String name, {String? index});
 
   /// Set a global variable. Adapters that persist should schedule a flush.
-  void setGlobal(
-    String name,
-    dynamic value, {
-    String? index,
-    String? asType,
-  });
+  void setGlobal(String name, dynamic value, {String? index, String? asType});
 
   bool existsGlobal(String name);
 

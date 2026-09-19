@@ -33,8 +33,7 @@ class FrozenClock extends Clock {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is FrozenClock && other.frozen == frozen;
+      identical(this, other) || other is FrozenClock && other.frozen == frozen;
 
   @override
   int get hashCode => frozen.hashCode;

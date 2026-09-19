@@ -31,7 +31,13 @@ class NoopLogger extends Logger {
 /// logging framework without pulling it into this package.
 class CallbackLogger extends Logger {
   const CallbackLogger(this._sink);
-  final void Function(String level, String message, [Object? error, StackTrace? stackTrace]) _sink;
+  final void Function(
+    String level,
+    String message, [
+    Object? error,
+    StackTrace? stackTrace,
+  ])
+  _sink;
 
   @override
   void debug(String message) => _sink('debug', message);

@@ -84,7 +84,8 @@ class CharacterMessageAssemblerPure {
         budgetPlanner ?? const MessageBudgetPlanner();
     final effectiveRegexService = regexService ?? RegexService();
 
-    final effectiveMacroService = macroService ??
+    final effectiveMacroService =
+        macroService ??
         MacroService(
           MacroContext.fromData(
             character: character,

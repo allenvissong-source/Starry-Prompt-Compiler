@@ -12,7 +12,8 @@ import '../ports/variable_store.dart';
 /// intentionally absent — hosts that need them wrap this class or provide a
 /// separate adapter.
 class InMemoryVariableStore extends VariableStore {
-  InMemoryVariableStore({Logger logger = const NoopLogger()}) : _logger = logger;
+  InMemoryVariableStore({Logger logger = const NoopLogger()})
+    : _logger = logger;
 
   final Logger _logger;
 
@@ -44,9 +45,16 @@ class InMemoryVariableStore extends VariableStore {
 
     if (index != null) {
       try {
-        chatVars[name] = _writeIndexedValue(chatVars[name], value, index, asType);
+        chatVars[name] = _writeIndexedValue(
+          chatVars[name],
+          value,
+          index,
+          asType,
+        );
       } on Object catch (e) {
-        _logger.warn('Failed to set indexed local variable "$name[$index]": $e');
+        _logger.warn(
+          'Failed to set indexed local variable "$name[$index]": $e',
+        );
       }
     } else {
       chatVars[name] = value;
@@ -103,10 +111,16 @@ class InMemoryVariableStore extends VariableStore {
     }
     if (index != null) {
       try {
-        _globalVariables[name] =
-            _writeIndexedValue(_globalVariables[name], value, index, asType);
+        _globalVariables[name] = _writeIndexedValue(
+          _globalVariables[name],
+          value,
+          index,
+          asType,
+        );
       } on Object catch (e) {
-        _logger.warn('Failed to set indexed global variable "$name[$index]": $e');
+        _logger.warn(
+          'Failed to set indexed global variable "$name[$index]": $e',
+        );
       }
     } else {
       _globalVariables[name] = value;

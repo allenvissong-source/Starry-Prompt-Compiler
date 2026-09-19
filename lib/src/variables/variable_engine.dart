@@ -13,9 +13,11 @@ import '../ports/variable_store.dart';
 /// coercion / indexed access / error swallow reflects the original
 /// characterization tests (SUT=starry baseline).
 class VariableEngine {
-  VariableEngine({required VariableStore store, Logger logger = const NoopLogger()})
-    : _store = store,
-      _logger = logger;
+  VariableEngine({
+    required VariableStore store,
+    Logger logger = const NoopLogger(),
+  }) : _store = store,
+       _logger = logger;
 
   final VariableStore _store;
   // Reserved for future diagnostic hooks (e.g. logging swallowed decode
@@ -46,7 +48,9 @@ class VariableEngine {
 
     // Try to handle as array
     try {
-      final parsed = currentValue is String ? jsonDecode(currentValue) : currentValue;
+      final parsed = currentValue is String
+          ? jsonDecode(currentValue)
+          : currentValue;
       if (parsed is List) {
         parsed.add(value);
         _store.setGlobal(name, jsonEncode(parsed));
@@ -81,7 +85,9 @@ class VariableEngine {
     final currentValue = _store.getLocal(chatId, name);
 
     try {
-      final parsed = currentValue is String ? jsonDecode(currentValue) : currentValue;
+      final parsed = currentValue is String
+          ? jsonDecode(currentValue)
+          : currentValue;
       if (parsed is List) {
         parsed.add(value);
         _store.setLocal(chatId, name, jsonEncode(parsed));
@@ -107,8 +113,10 @@ class VariableEngine {
     return stringValue;
   }
 
-  dynamic incrementLocal(String chatId, String name) => addLocal(chatId, name, 1);
-  dynamic decrementLocal(String chatId, String name) => addLocal(chatId, name, -1);
+  dynamic incrementLocal(String chatId, String name) =>
+      addLocal(chatId, name, 1);
+  dynamic decrementLocal(String chatId, String name) =>
+      addLocal(chatId, name, -1);
 
   // ==================== Macro processing ====================
 

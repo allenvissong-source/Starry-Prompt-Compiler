@@ -46,11 +46,7 @@ enum TurnMessageRole {
 }
 
 class TurnMessage {
-  const TurnMessage({
-    required this.role,
-    required this.content,
-    this.sourceId,
-  });
+  const TurnMessage({required this.role, required this.content, this.sourceId});
 
   final TurnMessageRole role;
   final dynamic content;

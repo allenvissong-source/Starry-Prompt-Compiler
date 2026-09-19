@@ -48,14 +48,17 @@ void main() {
     // testing a chained expression means the final `get` sees the terminal
     // value, not an intermediate one. This is deliberate parity with the
     // legacy `VariablesService.processVariableMacros`.
-    test('processVariableMacros: setvar + getvar (single-pass simple case)', () {
-      final out = engine.processVariableMacros(
-        '[{{setvar::greet::hi}}][{{getvar::greet}}]',
-        chatId: 'c1',
-      );
-      expect(out, '[][hi]');
-      expect(store.getLocal('c1', 'greet'), 'hi');
-    });
+    test(
+      'processVariableMacros: setvar + getvar (single-pass simple case)',
+      () {
+        final out = engine.processVariableMacros(
+          '[{{setvar::greet::hi}}][{{getvar::greet}}]',
+          chatId: 'c1',
+        );
+        expect(out, '[][hi]');
+        expect(store.getLocal('c1', 'greet'), 'hi');
+      },
+    );
 
     test('processVariableMacros: local chain reflects fixed pass order', () {
       store.setLocal('c1', 'a', 1);
@@ -70,7 +73,10 @@ void main() {
       // Integer-valued doubles stringify as `6.0` on the Dart VM but `6` on
       // dart2js/web (a platform `.toString()` divergence, not a logic diff).
       // Accept both forms so this parity gate passes on VM and web alike.
-      expect(out, anyOf('inc=7.0 dec=6.0 add= g=[6.0]', 'inc=7 dec=6 add= g=[6]'));
+      expect(
+        out,
+        anyOf('inc=7.0 dec=6.0 add= g=[6.0]', 'inc=7 dec=6 add= g=[6]'),
+      );
     });
 
     test('processVariableMacros: setglobalvar + getglobalvar', () {
@@ -91,31 +97,43 @@ void main() {
       );
       // Integer-valued doubles stringify as `10.0` on the Dart VM but `10` on
       // dart2js/web. Accept both platform forms (see local-chain note above).
-      expect(out, anyOf('inc=11.0 dec=10.0 add= v=[10.0]', 'inc=11 dec=10 add= v=[10]'));
+      expect(
+        out,
+        anyOf('inc=11.0 dec=10.0 add= v=[10.0]', 'inc=11 dec=10 add= v=[10]'),
+      );
     });
 
     test('local macros expand to empty when chatId is null', () {
-      final out = engine.processVariableMacros('x={{getvar::foo}}|{{incvar::bar}}');
+      final out = engine.processVariableMacros(
+        'x={{getvar::foo}}|{{incvar::bar}}',
+      );
       expect(out, 'x=|');
     });
 
     test('import / export local via metadata', () {
-      store.importLocalFromMetadata('c1', {'variables': {'k': 'v', 'n': 42}});
+      store.importLocalFromMetadata('c1', {
+        'variables': {'k': 'v', 'n': 42},
+      });
       expect(store.getAllLocal('c1'), {'k': 'v', 'n': 42});
 
       final exported = store.exportLocalToMetadata('c1');
-      expect(exported, {'variables': {'k': 'v', 'n': 42}});
+      expect(exported, {
+        'variables': {'k': 'v', 'n': 42},
+      });
 
       expect(store.exportLocalToMetadata('empty'), isNull);
     });
 
-    test('getLocal returns "" when missing; getLocal coerces numeric strings', () {
-      expect(store.getLocal('c1', 'missing'), '');
-      store.setLocal('c1', 'x', '3.14');
-      expect(store.getLocal('c1', 'x'), closeTo(3.14, 1e-9));
-      store.setLocal('c1', 'y', '42');
-      expect(store.getLocal('c1', 'y'), 42);
-    });
+    test(
+      'getLocal returns "" when missing; getLocal coerces numeric strings',
+      () {
+        expect(store.getLocal('c1', 'missing'), '');
+        store.setLocal('c1', 'x', '3.14');
+        expect(store.getLocal('c1', 'x'), closeTo(3.14, 1e-9));
+        store.setLocal('c1', 'y', '42');
+        expect(store.getLocal('c1', 'y'), 42);
+      },
+    );
 
     test('indexed set/get for local list & map', () {
       store.setLocal('c1', 'arr', null, index: '2', asType: 'int');

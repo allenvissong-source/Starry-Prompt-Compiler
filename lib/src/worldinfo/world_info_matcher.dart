@@ -404,7 +404,8 @@ class WorldInfoMatcher {
       requireKeyOverlap: recall.requireKeyOverlap,
     )) {
       if (matches.length >= recall.maxCandidates) break;
-      if (hit.score < recall.minScore) break; // sorted desc: no later hit passes
+      // sorted desc: no later hit passes
+      if (hit.score < recall.minScore) break;
       // The precision gate. Without it recall drifts into body-text similarity
       // and injects lore on function words alone (「晚饭吃什么」 → an entry whose
       // prose contains 什么). Note this cannot be a score threshold instead:

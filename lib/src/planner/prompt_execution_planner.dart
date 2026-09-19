@@ -1274,9 +1274,10 @@ class PromptExecutionPlanner {
       'high' => ExecutionBudgetTier.high,
       'normal' => ExecutionBudgetTier.normal,
       'low' => ExecutionBudgetTier.low,
-      _ => entry.ignoreBudget
-          ? ExecutionBudgetTier.high
-          : ExecutionBudgetTier.normal,
+      _ =>
+        entry.ignoreBudget
+            ? ExecutionBudgetTier.high
+            : ExecutionBudgetTier.normal,
     };
   }
 

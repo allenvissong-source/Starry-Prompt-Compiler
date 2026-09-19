@@ -79,9 +79,7 @@ List<WorldInfoMatch> match(
   WorldInfoMatchContext? context,
   RecallTokenizer tokenizer = const BigramRecallTokenizer(),
 }) {
-  return WorldInfoMatcher(
-    tokenizer: tokenizer,
-  ).findMatchingEntriesWithMetadata(
+  return WorldInfoMatcher(tokenizer: tokenizer).findMatchingEntriesWithMetadata(
     context: context ?? WorldInfoMatchContext(history: probe),
     entries: entries,
     characterId: characterId,
@@ -224,7 +222,9 @@ void main() {
       expect(
         const Bm25Ranker().rank(
           query: '！！',
-          documents: const <RecallDocument>[RecallDocument(id: 'a', text: '父亲')],
+          documents: const <RecallDocument>[
+            RecallDocument(id: 'a', text: '父亲'),
+          ],
         ),
         isEmpty,
       );
@@ -354,7 +354,9 @@ void main() {
 
     test('substring mode is unchanged', () {
       final matches = match(
-        <WorldInfoEntry>[entry(id: 'tower', keys: <String>['塔'])],
+        <WorldInfoEntry>[
+          entry(id: 'tower', keys: <String>['塔']),
+        ],
         probe: '塔罗牌好玩吗',
         recall: WorldInfoRecallOptions.keywordOnlyBaseline,
       );
@@ -474,7 +476,10 @@ void main() {
       ];
       final matches = match(entries, probe: '父亲怎么了');
       expect(matches, hasLength(1));
-      expect(matches.single.activationReason, WorldInfoActivationReason.keyword);
+      expect(
+        matches.single.activationReason,
+        WorldInfoActivationReason.keyword,
+      );
     });
 
     test('maxCandidates caps how many entries recall may add', () {
@@ -537,17 +542,14 @@ void main() {
       test('disabled entries never recall', () {
         expect(
           semanticIds(
-            match(
-              <WorldInfoEntry>[
-                entry(
-                  id: 'e',
-                  keys: <String>['米雪儿的父亲'],
-                  content: '父亲',
-                  enabled: false,
-                ),
-              ],
-              probe: '你父亲怎么了',
-            ),
+            match(<WorldInfoEntry>[
+              entry(
+                id: 'e',
+                keys: <String>['米雪儿的父亲'],
+                content: '父亲',
+                enabled: false,
+              ),
+            ], probe: '你父亲怎么了'),
           ),
           isEmpty,
         );
@@ -556,20 +558,17 @@ void main() {
       test('a character filter excluding this character blocks recall', () {
         expect(
           semanticIds(
-            match(
-              <WorldInfoEntry>[
-                entry(
-                  id: 'e',
-                  keys: <String>['米雪儿的父亲'],
-                  content: '父亲',
-                  characterFilter: const <String, dynamic>{
-                    'type': 'include',
-                    'character_ids': <String>['someone-else'],
-                  },
-                ),
-              ],
-              probe: '你父亲怎么了',
-            ),
+            match(<WorldInfoEntry>[
+              entry(
+                id: 'e',
+                keys: <String>['米雪儿的父亲'],
+                content: '父亲',
+                characterFilter: const <String, dynamic>{
+                  'type': 'include',
+                  'character_ids': <String>['someone-else'],
+                },
+              ),
+            ], probe: '你父亲怎么了'),
           ),
           isEmpty,
         );
@@ -604,19 +603,16 @@ void main() {
       test('selectiveLogic NOT_ANY vetoes a recall hit', () {
         expect(
           semanticIds(
-            match(
-              <WorldInfoEntry>[
-                entry(
-                  id: 'e',
-                  keys: <String>['米雪儿的父亲'],
-                  secondaryKeys: <String>['昏迷'],
-                  selective: true,
-                  selectiveLogic: 2, // NOT_ANY
-                  content: '父亲',
-                ),
-              ],
-              probe: '你父亲昏迷了吗',
-            ),
+            match(<WorldInfoEntry>[
+              entry(
+                id: 'e',
+                keys: <String>['米雪儿的父亲'],
+                secondaryKeys: <String>['昏迷'],
+                selective: true,
+                selectiveLogic: 2, // NOT_ANY
+                content: '父亲',
+              ),
+            ], probe: '你父亲昏迷了吗'),
           ),
           isEmpty,
           reason: 'the secondary key is present, so NOT_ANY must veto',
@@ -626,19 +622,16 @@ void main() {
       test('selectiveLogic AND_ALL admits when secondary keys are present', () {
         expect(
           semanticIds(
-            match(
-              <WorldInfoEntry>[
-                entry(
-                  id: 'e',
-                  keys: <String>['米雪儿的父亲'],
-                  secondaryKeys: <String>['昏迷'],
-                  selective: true,
-                  selectiveLogic: 3, // AND_ALL
-                  content: '父亲',
-                ),
-              ],
-              probe: '你父亲昏迷了吗',
-            ),
+            match(<WorldInfoEntry>[
+              entry(
+                id: 'e',
+                keys: <String>['米雪儿的父亲'],
+                secondaryKeys: <String>['昏迷'],
+                selective: true,
+                selectiveLogic: 3, // AND_ALL
+                content: '父亲',
+              ),
+            ], probe: '你父亲昏迷了吗'),
           ),
           <String>{'e'},
         );
@@ -742,11 +735,7 @@ void main() {
         expect(semanticIds(match(delayed, probe: '你父亲怎么了')), isEmpty);
 
         final undelayed = <WorldInfoEntry>[
-          entry(
-            id: 'father',
-            keys: <String>['米雪儿的父亲'],
-            content: '父亲的记载',
-          ),
+          entry(id: 'father', keys: <String>['米雪儿的父亲'], content: '父亲的记载'),
         ];
         expect(
           semanticIds(match(undelayed, probe: '你父亲怎么了')),
@@ -779,10 +768,9 @@ void main() {
             delayUntilRecursionLevel: 2,
           ),
         ];
-        expect(
-          semanticIds(match(entries, probe: '你父亲怎么了')),
-          <String>{'father'},
-        );
+        expect(semanticIds(match(entries, probe: '你父亲怎么了')), <String>{
+          'father',
+        });
       });
 
       test('excludeRecursion does not restrict recall', () {
@@ -795,10 +783,9 @@ void main() {
             excludeRecursion: true,
           ),
         ];
-        expect(
-          semanticIds(match(entries, probe: '你父亲怎么了')),
-          <String>{'father'},
-        );
+        expect(semanticIds(match(entries, probe: '你父亲怎么了')), <String>{
+          'father',
+        });
       });
 
       test('preventRecursion does not restrict recall', () {
@@ -811,10 +798,9 @@ void main() {
             preventRecursion: true,
           ),
         ];
-        expect(
-          semanticIds(match(entries, probe: '你父亲怎么了')),
-          <String>{'father'},
-        );
+        expect(semanticIds(match(entries, probe: '你父亲怎么了')), <String>{
+          'father',
+        });
       });
     });
   });
@@ -845,13 +831,11 @@ void main() {
         tokenizer: BigramRecallTokenizer(),
       ).rank(query: '父亲怎么了', documents: documents, requireKeyOverlap: true);
 
-      expect(withDefault.map((h) => h.documentId), explicit.map(
-        (h) => h.documentId,
-      ));
       expect(
-        withDefault.map((h) => h.score),
-        explicit.map((h) => h.score),
+        withDefault.map((h) => h.documentId),
+        explicit.map((h) => h.documentId),
       );
+      expect(withDefault.map((h) => h.score), explicit.map((h) => h.score));
     });
 
     test('an injected tokenizer really drives scoring', () {
@@ -870,8 +854,9 @@ void main() {
         <String>['a'],
       );
       expect(
-        const Bm25Ranker(tokenizer: _WholeRunTokenizer())
-            .rank(query: query, documents: documents, requireKeyOverlap: true),
+        const Bm25Ranker(
+          tokenizer: _WholeRunTokenizer(),
+        ).rank(query: query, documents: documents, requireKeyOverlap: true),
         isEmpty,
       );
     });
@@ -890,18 +875,11 @@ void main() {
 
     test('the matcher honors the injected tokenizer', () {
       final entries = <WorldInfoEntry>[
-        entry(
-          id: 'father',
-          keys: <String>['米雪儿的父亲'],
-          content: '父亲在崩溃症治疗中昏迷',
-        ),
+        entry(id: 'father', keys: <String>['米雪儿的父亲'], content: '父亲在崩溃症治疗中昏迷'),
       ];
 
       // Baseline: recall reaches the entry through the shared 父亲 bigram.
-      expect(
-        semanticIds(match(entries, probe: '你父亲怎么了')),
-        <String>{'father'},
-      );
+      expect(semanticIds(match(entries, probe: '你父亲怎么了')), <String>{'father'});
       // Same probe, different segmentation, no shared token.
       expect(
         semanticIds(

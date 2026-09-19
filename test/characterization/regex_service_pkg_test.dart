@@ -100,25 +100,49 @@ void main() {
         replace: 'X',
         substituteRegex: SubstituteRegex.raw,
       );
-      expect(pkgSvc.runRegexScript(s, 'meet Zed now', characterName: 'Zed'), 'meet X now');
+      expect(
+        pkgSvc.runRegexScript(s, 'meet Zed now', characterName: 'Zed'),
+        'meet X now',
+      );
     });
 
     test('disabled script is a no-op', () {
-      final s = _pkgScript(id: 's', find: 'foo', replace: 'bar', disabled: true);
+      final s = _pkgScript(
+        id: 's',
+        find: 'foo',
+        replace: 'bar',
+        disabled: true,
+      );
       expect(pkgSvc.runRegexScript(s, 'foo'), 'foo');
     });
 
     test('empty input or empty find is a no-op', () {
-      expect(pkgSvc.runRegexScript(_pkgScript(id: 's', find: 'x', replace: 'y'), ''), '');
-      expect(pkgSvc.runRegexScript(_pkgScript(id: 's', find: '', replace: 'y'), 'x'), 'x');
+      expect(
+        pkgSvc.runRegexScript(_pkgScript(id: 's', find: 'x', replace: 'y'), ''),
+        '',
+      );
+      expect(
+        pkgSvc.runRegexScript(_pkgScript(id: 's', find: '', replace: 'y'), 'x'),
+        'x',
+      );
     });
   });
 
   group('SUT=package | RegexService.getRegexedString (script list gating)', () {
     test('only scripts whose placement matches are applied', () {
       final scripts = [
-        _pkgScript(id: 'ai', find: 'foo', replace: 'AI', placement: [RegexPlacement.aiOutput]),
-        _pkgScript(id: 'ui', find: 'foo', replace: 'UI', placement: [RegexPlacement.userInput]),
+        _pkgScript(
+          id: 'ai',
+          find: 'foo',
+          replace: 'AI',
+          placement: [RegexPlacement.aiOutput],
+        ),
+        _pkgScript(
+          id: 'ui',
+          find: 'foo',
+          replace: 'UI',
+          placement: [RegexPlacement.userInput],
+        ),
       ];
       expect(
         pkgSvc.getRegexedString('foo', RegexPlacement.aiOutput, scripts),
@@ -135,20 +159,33 @@ void main() {
         _pkgScript(id: 'second', find: 'B', replace: 'C', order: 2),
         _pkgScript(id: 'first', find: 'A', replace: 'B', order: 1),
       ];
-      expect(pkgSvc.getRegexedString('A', RegexPlacement.aiOutput, scripts), 'C');
+      expect(
+        pkgSvc.getRegexedString('A', RegexPlacement.aiOutput, scripts),
+        'C',
+      );
     });
 
     test('disabled scripts in the list are skipped', () {
       final scripts = [
         _pkgScript(id: 'd', find: 'foo', replace: 'X', disabled: true),
       ];
-      expect(pkgSvc.getRegexedString('foo', RegexPlacement.aiOutput, scripts), 'foo');
+      expect(
+        pkgSvc.getRegexedString('foo', RegexPlacement.aiOutput, scripts),
+        'foo',
+      );
     });
 
     test('promptOnly runs only when isPrompt is true', () {
-      final scripts = [_pkgScript(id: 'p', find: 'foo', replace: 'X', promptOnly: true)];
+      final scripts = [
+        _pkgScript(id: 'p', find: 'foo', replace: 'X', promptOnly: true),
+      ];
       expect(
-        pkgSvc.getRegexedString('foo', RegexPlacement.aiOutput, scripts, isPrompt: true),
+        pkgSvc.getRegexedString(
+          'foo',
+          RegexPlacement.aiOutput,
+          scripts,
+          isPrompt: true,
+        ),
         'X',
       );
       expect(
@@ -157,28 +194,57 @@ void main() {
       );
     });
 
-    test('a plain (non-prompt/non-markdown) script is skipped while isPrompt', () {
-      final scripts = [_pkgScript(id: 'plain', find: 'foo', replace: 'X')];
-      expect(
-        pkgSvc.getRegexedString('foo', RegexPlacement.aiOutput, scripts, isPrompt: true),
-        'foo',
-      );
-    });
+    test(
+      'a plain (non-prompt/non-markdown) script is skipped while isPrompt',
+      () {
+        final scripts = [_pkgScript(id: 'plain', find: 'foo', replace: 'X')];
+        expect(
+          pkgSvc.getRegexedString(
+            'foo',
+            RegexPlacement.aiOutput,
+            scripts,
+            isPrompt: true,
+          ),
+          'foo',
+        );
+      },
+    );
 
     test('depth gating: minDepth/maxDepth bound applicability', () {
       final scripts = [
-        _pkgScript(id: 'deep', find: 'foo', replace: 'X', minDepth: 2, maxDepth: 4),
+        _pkgScript(
+          id: 'deep',
+          find: 'foo',
+          replace: 'X',
+          minDepth: 2,
+          maxDepth: 4,
+        ),
       ];
       expect(
-        pkgSvc.getRegexedString('foo', RegexPlacement.aiOutput, scripts, depth: 3),
+        pkgSvc.getRegexedString(
+          'foo',
+          RegexPlacement.aiOutput,
+          scripts,
+          depth: 3,
+        ),
         'X',
       );
       expect(
-        pkgSvc.getRegexedString('foo', RegexPlacement.aiOutput, scripts, depth: 1),
+        pkgSvc.getRegexedString(
+          'foo',
+          RegexPlacement.aiOutput,
+          scripts,
+          depth: 1,
+        ),
         'foo',
       );
       expect(
-        pkgSvc.getRegexedString('foo', RegexPlacement.aiOutput, scripts, depth: 5),
+        pkgSvc.getRegexedString(
+          'foo',
+          RegexPlacement.aiOutput,
+          scripts,
+          depth: 5,
+        ),
         'foo',
       );
     });

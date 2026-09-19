@@ -126,7 +126,8 @@ void main() {
       sessionId: 'sess-1',
       topicId: 'topic-1',
       characterId: 'char-1',
-      history: history ??
+      history:
+          history ??
           <CharacterHistoryMessage>[
             historyMessage(
               role: TurnMessageRole.user,
@@ -340,7 +341,10 @@ void main() {
     PromptExecutionPlan planWithSplicedInjection() {
       return PromptExecutionPlan(
         shellSequence: <ResolvedExecutionUnit>[
-          shellUnit(id: 'sys', template: 'You are {{char}} talking to {{user}}.'),
+          shellUnit(
+            id: 'sys',
+            template: 'You are {{char}} talking to {{user}}.',
+          ),
           historyMarker(),
         ],
         historySplicePoints: <HistorySplicePoint>[
@@ -394,14 +398,11 @@ void main() {
     });
 
     test('mixed history and injection units keep a 1:1 id mapping', () {
-      final result = runWithHistory(
-        <CharacterHistoryMessage>[
-          historyMessage(role: TurnMessageRole.user, text: 'first', id: 'h1'),
-          historyMessage(role: TurnMessageRole.assistant, text: 'second'),
-          historyMessage(role: TurnMessageRole.user, text: 'third', id: 'h3'),
-        ],
-        plan: planWithSplicedInjection(),
-      );
+      final result = runWithHistory(<CharacterHistoryMessage>[
+        historyMessage(role: TurnMessageRole.user, text: 'first', id: 'h1'),
+        historyMessage(role: TurnMessageRole.assistant, text: 'second'),
+        historyMessage(role: TurnMessageRole.user, text: 'third', id: 'h3'),
+      ], plan: planWithSplicedInjection());
 
       // Only host rows carry ids, each bound to its own content, in order.
       expect(
@@ -436,9 +437,7 @@ void main() {
       );
       expect(
         result.messages
-            .singleWhere(
-              (message) => message.content == 'INJECTED_AT_DEPTH_1',
-            )
+            .singleWhere((message) => message.content == 'INJECTED_AT_DEPTH_1')
             .sourceId,
         isNull,
       );
@@ -485,10 +484,10 @@ void main() {
 
 class _DeterministicPorts {
   _DeterministicPorts(DateTime frozen)
-      : clock = FrozenClock(frozen),
-        random = SeededRandomSource(0),
-        locale = const LocaleTag('en_US'),
-        logger = const NoopLogger();
+    : clock = FrozenClock(frozen),
+      random = SeededRandomSource(0),
+      locale = const LocaleTag('en_US'),
+      logger = const NoopLogger();
 
   final FrozenClock clock;
   final SeededRandomSource random;

@@ -85,95 +85,106 @@ void main() {
     );
   }
 
-  group('SUT=package | WorldInfoMatcher keyword matching (behavior baseline)', () {
-    test('plain keyword substring match (case-insensitive by default)', () {
-      final e = _pkgEntry(id: 'e1', keys: ['dragon']);
-      expect(_pkgIds(pkgMatch([e], history: 'A DRAGON appears')), ['e1']);
-      expect(pkgMatch([e], history: 'nothing here'), isEmpty);
-    });
+  group(
+    'SUT=package | WorldInfoMatcher keyword matching (behavior baseline)',
+    () {
+      test('plain keyword substring match (case-insensitive by default)', () {
+        final e = _pkgEntry(id: 'e1', keys: ['dragon']);
+        expect(_pkgIds(pkgMatch([e], history: 'A DRAGON appears')), ['e1']);
+        expect(pkgMatch([e], history: 'nothing here'), isEmpty);
+      });
 
-    test('caseSensitive requires exact case', () {
-      final e = _pkgEntry(id: 'e1', keys: ['Dragon'], caseSensitive: true);
-      expect(pkgMatch([e], history: 'a Dragon'), isNotEmpty);
-      expect(pkgMatch([e], history: 'a dragon'), isEmpty);
-    });
+      test('caseSensitive requires exact case', () {
+        final e = _pkgEntry(id: 'e1', keys: ['Dragon'], caseSensitive: true);
+        expect(pkgMatch([e], history: 'a Dragon'), isNotEmpty);
+        expect(pkgMatch([e], history: 'a dragon'), isEmpty);
+      });
 
-    test('matchWholeWords rejects substrings inside larger words', () {
-      final e = _pkgEntry(id: 'e1', keys: ['cat'], matchWholeWords: true);
-      expect(pkgMatch([e], history: 'the cat sat'), isNotEmpty);
-      expect(pkgMatch([e], history: 'concatenate'), isEmpty);
-    });
+      test('matchWholeWords rejects substrings inside larger words', () {
+        final e = _pkgEntry(id: 'e1', keys: ['cat'], matchWholeWords: true);
+        expect(pkgMatch([e], history: 'the cat sat'), isNotEmpty);
+        expect(pkgMatch([e], history: 'concatenate'), isEmpty);
+      });
 
-    test('disabled entry never matches even with keyword present', () {
-      final e = _pkgEntry(id: 'e1', keys: ['dragon'], enabled: false);
-      expect(pkgMatch([e], history: 'a dragon'), isEmpty);
-    });
+      test('disabled entry never matches even with keyword present', () {
+        final e = _pkgEntry(id: 'e1', keys: ['dragon'], enabled: false);
+        expect(pkgMatch([e], history: 'a dragon'), isEmpty);
+      });
 
-    test('empty-keys entry activates as constant even when constant=false',
+      test(
+        'empty-keys entry activates as constant even when constant=false',
         () {
-      final e = _pkgEntry(id: 'e1', keys: const []);
-      expect(_pkgIds(pkgMatch([e], history: 'anything')), ['e1']);
-    });
-
-    test('constant entry always activates regardless of keywords', () {
-      final e = _pkgEntry(id: 'e1', keys: ['neverpresent'], constant: true);
-      expect(_pkgIds(pkgMatch([e], history: 'unrelated')), ['e1']);
-    });
-
-    test('empty-keys entry is treated as constant (always on)', () {
-      final e = _pkgEntry(id: 'e1', keys: const [], constant: true);
-      expect(_pkgIds(pkgMatch([e], history: 'unrelated')), ['e1']);
-    });
-  });
-
-  group('SUT=package | WorldInfoMatcher selective secondary keys (behavior baseline)', () {
-    test('selective requires a secondary key also present', () {
-      final e = _pkgEntry(
-        id: 'e1',
-        keys: ['dragon'],
-        secondaryKeys: ['fire'],
-        selective: true,
+          final e = _pkgEntry(id: 'e1', keys: const []);
+          expect(_pkgIds(pkgMatch([e], history: 'anything')), ['e1']);
+        },
       );
-      expect(pkgMatch([e], history: 'a fire dragon'), isNotEmpty);
-      expect(pkgMatch([e], history: 'a water dragon'), isEmpty);
-    });
 
-    test('selective with empty secondaryKeys behaves as plain match', () {
-      final e = _pkgEntry(
-        id: 'e1',
-        keys: ['dragon'],
-        secondaryKeys: const [],
-        selective: true,
-      );
-      expect(pkgMatch([e], history: 'a dragon'), isNotEmpty);
-    });
-  });
+      test('constant entry always activates regardless of keywords', () {
+        final e = _pkgEntry(id: 'e1', keys: ['neverpresent'], constant: true);
+        expect(_pkgIds(pkgMatch([e], history: 'unrelated')), ['e1']);
+      });
 
-  group('SUT=package | WorldInfoMatcher generation trigger gating (behavior baseline)', () {
-    test('entry with triggers only fires on matching trigger', () {
-      final e = _pkgEntry(
-        id: 'e1',
-        keys: ['dragon'],
-        generationTriggers: const ['regenerate'],
-      );
-      expect(
-        pkgMatch([e], history: 'a dragon', generationTrigger: 'regenerate'),
-        isNotEmpty,
-      );
-      expect(
-        pkgMatch([e], history: 'a dragon', generationTrigger: 'normal'),
-        isEmpty,
-      );
-    });
+      test('empty-keys entry is treated as constant (always on)', () {
+        final e = _pkgEntry(id: 'e1', keys: const [], constant: true);
+        expect(_pkgIds(pkgMatch([e], history: 'unrelated')), ['e1']);
+      });
+    },
+  );
 
-    test('entry with no triggers fires for any trigger', () {
-      final e = _pkgEntry(id: 'e1', keys: ['dragon']);
-      expect(
-        pkgMatch([e], history: 'a dragon', generationTrigger: 'anything'),
-        isNotEmpty,
-      );
-    });
-  });
+  group(
+    'SUT=package | WorldInfoMatcher selective secondary keys (behavior baseline)',
+    () {
+      test('selective requires a secondary key also present', () {
+        final e = _pkgEntry(
+          id: 'e1',
+          keys: ['dragon'],
+          secondaryKeys: ['fire'],
+          selective: true,
+        );
+        expect(pkgMatch([e], history: 'a fire dragon'), isNotEmpty);
+        expect(pkgMatch([e], history: 'a water dragon'), isEmpty);
+      });
+
+      test('selective with empty secondaryKeys behaves as plain match', () {
+        final e = _pkgEntry(
+          id: 'e1',
+          keys: ['dragon'],
+          secondaryKeys: const [],
+          selective: true,
+        );
+        expect(pkgMatch([e], history: 'a dragon'), isNotEmpty);
+      });
+    },
+  );
+
+  group(
+    'SUT=package | WorldInfoMatcher generation trigger gating (behavior baseline)',
+    () {
+      test('entry with triggers only fires on matching trigger', () {
+        final e = _pkgEntry(
+          id: 'e1',
+          keys: ['dragon'],
+          generationTriggers: const ['regenerate'],
+        );
+        expect(
+          pkgMatch([e], history: 'a dragon', generationTrigger: 'regenerate'),
+          isNotEmpty,
+        );
+        expect(
+          pkgMatch([e], history: 'a dragon', generationTrigger: 'normal'),
+          isEmpty,
+        );
+      });
+
+      test('entry with no triggers fires for any trigger', () {
+        final e = _pkgEntry(id: 'e1', keys: ['dragon']);
+        expect(
+          pkgMatch([e], history: 'a dragon', generationTrigger: 'anything'),
+          isNotEmpty,
+        );
+      });
+    },
+  );
 
   group('SUT=package | WorldInfoMatcher ordering & recursion (behavior baseline)', () {
     test('results sorted ascending by insertionOrder', () {
@@ -184,7 +195,11 @@ void main() {
     });
 
     test('recursive activation: one entry content triggers another', () {
-      final e1 = _pkgEntry(id: 'e1', keys: ['dragon'], content: 'guards treasure');
+      final e1 = _pkgEntry(
+        id: 'e1',
+        keys: ['dragon'],
+        content: 'guards treasure',
+      );
       final e2 = _pkgEntry(id: 'e2', keys: ['treasure'], insertionOrder: 1);
       final result = _pkgIds(pkgMatch([e1, e2], history: 'a dragon'));
       expect(result, containsAll(<String>['e1', 'e2']));
@@ -197,7 +212,11 @@ void main() {
     // because the matcher read `preventRecursion` in that slot, so the golden
     // locked the mix-up in place. The behavior asserted here is unchanged.
     test('excludeRecursion entry is not activated by other entries', () {
-      final e1 = _pkgEntry(id: 'e1', keys: ['dragon'], content: 'guards treasure');
+      final e1 = _pkgEntry(
+        id: 'e1',
+        keys: ['dragon'],
+        content: 'guards treasure',
+      );
       final e2 = _pkgEntry(
         id: 'e2',
         keys: ['treasure'],
@@ -243,7 +262,11 @@ void main() {
       final e2 = _pkgEntry(id: 'e2', keys: ['treasure'], insertionOrder: 1);
       final result = _pkgIds(pkgMatch([e1, e2], history: 'a dragon'));
       expect(result, contains('e1'), reason: 'the entry itself still injects');
-      expect(result, isNot(contains('e2')), reason: 'its content cannot cascade');
+      expect(
+        result,
+        isNot(contains('e2')),
+        reason: 'its content cannot cascade',
+      );
     });
 
     test('preventRecursion on every hit ends the cascade', () {
@@ -270,7 +293,11 @@ void main() {
     test('the two recursion flags are independent', () {
       // Entrance and exit both closed: injected on a direct hit, reachable by
       // nobody, and feeding nobody.
-      final e1 = _pkgEntry(id: 'e1', keys: ['dragon'], content: 'guards treasure');
+      final e1 = _pkgEntry(
+        id: 'e1',
+        keys: ['dragon'],
+        content: 'guards treasure',
+      );
       final e2 = _pkgEntry(
         id: 'e2',
         keys: ['treasure', 'dragon'],
@@ -302,7 +329,11 @@ void main() {
     });
 
     test('a delayed entry fires once recursion begins', () {
-      final e1 = _pkgEntry(id: 'e1', keys: ['dragon'], content: 'guards treasure');
+      final e1 = _pkgEntry(
+        id: 'e1',
+        keys: ['dragon'],
+        content: 'guards treasure',
+      );
       final e2 = _pkgEntry(
         id: 'e2',
         keys: ['treasure'],
@@ -314,7 +345,11 @@ void main() {
     });
 
     test('true means level 1, so it opens in the first recursion pass', () {
-      final e1 = _pkgEntry(id: 'e1', keys: ['dragon'], content: 'guards treasure');
+      final e1 = _pkgEntry(
+        id: 'e1',
+        keys: ['dragon'],
+        content: 'guards treasure',
+      );
       final lvl1 = _pkgEntry(
         id: 'lvl1',
         keys: ['treasure'],
@@ -328,7 +363,9 @@ void main() {
         delayUntilRecursionLevel: 1,
         insertionOrder: 2,
       );
-      final result = _pkgIds(pkgMatch([e1, lvl1, explicit], history: 'a dragon'));
+      final result = _pkgIds(
+        pkgMatch([e1, lvl1, explicit], history: 'a dragon'),
+      );
       expect(result, containsAll(<String>['e1', 'lvl1', 'explicit']));
     });
 
@@ -336,7 +373,11 @@ void main() {
       // The level-2 entry shares the level-1 entry's key, so it *could* have
       // matched in the same pass; only the level gate holds it back, and it must
       // still arrive once that level opens.
-      final e1 = _pkgEntry(id: 'e1', keys: ['dragon'], content: 'guards treasure');
+      final e1 = _pkgEntry(
+        id: 'e1',
+        keys: ['dragon'],
+        content: 'guards treasure',
+      );
       final lvl1 = _pkgEntry(
         id: 'lvl1',
         keys: ['treasure'],
@@ -356,7 +397,11 @@ void main() {
     });
 
     test('sparse levels open in ascending order, deterministically', () {
-      final e1 = _pkgEntry(id: 'e1', keys: ['dragon'], content: 'guards treasure');
+      final e1 = _pkgEntry(
+        id: 'e1',
+        keys: ['dragon'],
+        content: 'guards treasure',
+      );
       List<String> run() {
         final entries = <WorldInfoEntry>[
           e1,
@@ -436,7 +481,11 @@ void main() {
     });
 
     test('entries sharing a level open together', () {
-      final e1 = _pkgEntry(id: 'e1', keys: ['dragon'], content: 'guards treasure');
+      final e1 = _pkgEntry(
+        id: 'e1',
+        keys: ['dragon'],
+        content: 'guards treasure',
+      );
       final a = _pkgEntry(
         id: 'a',
         keys: ['treasure'],
@@ -472,7 +521,11 @@ void main() {
       // reaches the matcher. SillyTavern agrees: its level gate only applies
       // inside a recursion pass, which that setting makes unreachable. Delayed
       // levels must not become a back door around the depth cap.
-      final e1 = _pkgEntry(id: 'e1', keys: ['dragon'], content: 'guards treasure');
+      final e1 = _pkgEntry(
+        id: 'e1',
+        keys: ['dragon'],
+        content: 'guards treasure',
+      );
       final e2 = _pkgEntry(
         id: 'e2',
         keys: ['treasure'],
