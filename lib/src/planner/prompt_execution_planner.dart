@@ -127,7 +127,9 @@ class PromptExecutionPlanner {
         continue;
       }
 
-      final explicitAnchorId = _explicitAnchorId(block.placement.anchor ?? 'relative');
+      final explicitAnchorId = _explicitAnchorId(
+        block.placement.anchor ?? 'relative',
+      );
       final insertionMode = _blockInsertionMode(
         block,
         sourceOrder: sourceOrder,
@@ -157,8 +159,7 @@ class PromptExecutionPlanner {
               ? (block.placement.depth ?? 0)
               : null,
           injectionOrder:
-              block.priority.injectionOrder ??
-              block.priority.sortOrder,
+              block.priority.injectionOrder ?? block.priority.sortOrder,
           generationTriggers: block.activation.generationTriggers,
           locked: block.protection.locked,
           forbidOverride: block.protection.forbidOverride,
@@ -985,8 +986,7 @@ class PromptExecutionPlanner {
   }) {
     final anchor = (block.placement.anchor ?? 'relative').trim().toLowerCase();
     if (block.placement.depth != null &&
-        (anchor == 'absolute' ||
-            block.placement.injectionPosition == 1)) {
+        (anchor == 'absolute' || block.placement.injectionPosition == 1)) {
       return ExecutionInsertionMode.historySplice;
     }
     if (block.kind == 'core:postHistoryInstructions') {
@@ -1034,9 +1034,7 @@ class PromptExecutionPlanner {
             : PromptSection.getDefaultContent(
                 PromptSectionType.postHistoryInstructions,
               ),
-      'nsfw' => PromptSection.getDefaultContent(
-        PromptSectionType.nsfw,
-      ),
+      'nsfw' => PromptSection.getDefaultContent(PromptSectionType.nsfw),
       _ => '',
     };
   }
@@ -1045,8 +1043,7 @@ class PromptExecutionPlanner {
     final markerOrders = <String, int>{};
     for (final block in orderedBlocks) {
       if (_isHistoryMarker(block) || block.isMarker) {
-        markerOrders[_markerIdentityForBlock(block)] =
-            block.priority.sortOrder;
+        markerOrders[_markerIdentityForBlock(block)] = block.priority.sortOrder;
       }
     }
     return markerOrders;
@@ -1247,9 +1244,7 @@ class PromptExecutionPlanner {
   }
 
   int _comparePromptBlocks(PromptBlockV2 a, PromptBlockV2 b) {
-    final orderCompare = a.priority.sortOrder.compareTo(
-      b.priority.sortOrder,
-    );
+    final orderCompare = a.priority.sortOrder.compareTo(b.priority.sortOrder);
     if (orderCompare != 0) {
       return orderCompare;
     }

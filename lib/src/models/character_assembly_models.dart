@@ -131,6 +131,7 @@ class ResolvedPromptContext {
   final Character character;
   final List<WorldInfoEntry> worldInfoEntries;
   final Map<WorldInfoPosition, List<WorldInfoEntry>> groupedWorldInfoEntries;
+
   /// Prompt blocks in the V2 shape.
   ///
   /// This is the migration boundary: callers still hand in V1 [PromptBlock]s
