@@ -1,0 +1,454 @@
+{
+  "version": 4,
+  "tasksRevision": "9e62de55c8d44eb7283b57e0e259c6fea45858ad848d7ee5a204648844c3e6c7",
+  "reconciledAt": "2026-09-19T22:41:58.945Z",
+  "tasks": {
+    "task_346874dd42a0e79f2cd47494": {
+      "id": "task_346874dd42a0e79f2cd47494",
+      "taskKey": "1.1",
+      "file": "openspec/changes/migrate-prompt-block-to-v2/tasks.md",
+      "sectionPath": [
+        "1. Baseline"
+      ],
+      "ordinal": 1,
+      "description": "1.1 Record the pre-change baseline: `dart analyze` and `dart test` in this package, and the byte-identity status of all 22 fixtures under `test/fixtures/starry_prompt_compiler/behavior_v1/` via `flutter test test/features/prompt_compiler/behavior_baseline_golden_test.dart` in `Starry-Flutter-Frontend`. Without a green starting point a later red is unattributable",
+      "sourceClaim": "in_progress",
+      "sourceFingerprint": "a4a378213f900a35bc6ebb86cdf5ac43f0b342ad6054761ff402812ff63d10c1",
+      "state": "verified",
+      "evidence": [
+        {
+          "id": "152a3a84-dede-44e4-84ec-2991e540cc73",
+          "kind": "test",
+          "source": "executed",
+          "summary": "Compiler package pre-change baseline at f0f249c: `dart analyze` -> 'No issues found!' exit 0; `dart test` -> 190 passed, exit 0. (Note: openspec/project.md and AGENTS.md both still say 177 cases; the measured count is 190 because the UTC instant-basis guard added 13. Recording the measured number, per the standing rule that measurement beats the plan.)",
+          "command": "dart analyze ; dart test",
+          "workingDirectory": ".",
+          "workingDirectoryScope": "workspace",
+          "exitCode": 0,
+          "passed": 190,
+          "recordedAt": "2026-09-19T22:06:42.118Z"
+        },
+        {
+          "id": "ba45e599-3f30-4f95-9502-01fcd74c32e5",
+          "kind": "test",
+          "source": "executed",
+          "summary": "Golden byte-identity gate is GREEN before any G4 change: 44 passed / 0 failed, exit 0. Run in Starry-Flutter-Frontend at a69692f (external to this package, which is why the fixtures live there and not in the compiler repo). The 44 cases are the 22 behavior_v1 fixtures exercised twice - once through the primary baseline driver and once through the independent reserialization cross-check. This is the green starting point that makes any later red attributable.",
+          "command": "flutter test test/features/prompt_compiler/behavior_baseline_golden_test.dart",
+          "workingDirectory": "D:\\Starry-1.07\\Starry-Flutter-Frontend",
+          "workingDirectoryScope": "external",
+          "exitCode": 0,
+          "passed": 44,
+          "failed": 0,
+          "recordedAt": "2026-09-19T22:06:42.118Z"
+        }
+      ],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T22:06:42.124Z"
+    },
+    "task_f85ca1c4ce3a2e040cb764a7": {
+      "id": "task_f85ca1c4ce3a2e040cb764a7",
+      "taskKey": "1.2",
+      "file": "openspec/changes/migrate-prompt-block-to-v2/tasks.md",
+      "sectionPath": [
+        "1. Baseline"
+      ],
+      "ordinal": 2,
+      "description": "1.2 Record the measured fixture count and SHA256 of every committed `expected.json`, so any later edit to an expectation is detectable rather than assumed absent",
+      "sourceClaim": "in_progress",
+      "sourceFingerprint": "ce9f6cb68eb18cb916713367eb746f34743b100c687c40a74b1503d7c13f94a7",
+      "state": "verified",
+      "evidence": [
+        {
+          "id": "62a0a6c0-4a7f-4372-ac55-d76e05f94746",
+          "kind": "analysis",
+          "source": "executed",
+          "summary": "Measured fixture count: 22 subdirectories (A00-A10, B01-B03, C01-C06, E01-E02). Every one has a committed expected.json; all 22 SHA256'd and written to a per-fixture manifest, whose own SHA256 is 245D64AFF6F82FFB7ECDA4683A4438492424DF1499EF96EA0C41032FD08DDE02. Captured twice at separate points in the session with an identical aggregate, so it is stable and reusable as the acceptance bar: an unchanged aggregate after the migration means all 22 expectations are byte-identical and none was quietly re-recorded. Sample: A00_smoke_custom_block F6B8BA79E88FF01E360FBFE1019BBE5CEE2756EF2E8D40317F3D6DFE5922219C; A01_system_prompt_from_character 869B511DD26659C3B27ECB95AEF8F7CC6B9C430425C6B7F5DCB25DA7ED1906D0. DEVIATION FROM PLAN, recorded per the measurement-wins rule: compat_matrix_v1_v2.md said 19 fixtures in three places; the directory count is 22. Corrected in Starry-Flutter-Frontend commit 53dd284 before any code was written, because section 8's acceptance gate stated as '19' would have licensed leaving three fixtures unchecked.",
+          "command": "Get-ChildItem test/fixtures/starry_prompt_compiler/behavior_v1 -Directory | Sort-Object Name | ForEach-Object { Get-FileHash (Join-Path $_.FullName 'expected.json') -Algorithm SHA256 }",
+          "workingDirectory": "D:\\Starry-1.07\\Starry-Flutter-Frontend",
+          "workingDirectoryScope": "external",
+          "exitCode": 0,
+          "recordedAt": "2026-09-19T22:12:14.562Z"
+        }
+      ],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T22:12:14.568Z"
+    },
+    "task_665f75d227ee049a24998b62": {
+      "id": "task_665f75d227ee049a24998b62",
+      "taskKey": "2.1",
+      "file": "openspec/changes/migrate-prompt-block-to-v2/tasks.md",
+      "sectionPath": [
+        "2. V2 model and conversion"
+      ],
+      "ordinal": 3,
+      "description": "2.1 Add the V2 block model matching `docs/prompt_compiler/schema/prompt_block_v2.schema.json`: `schemaVersion`, open `kind`, discriminated `placement`, `activation`, `priority`, `protection`, `provenance`, `extensions`",
+      "sourceClaim": "in_progress",
+      "sourceFingerprint": "024e180d511eb99c2e6d23535659e67330abead615e48ad9af0d2477121eec03",
+      "state": "verified",
+      "evidence": [
+        {
+          "id": "3b69e93d-4439-4408-9ac1-c7088cf802c7",
+          "kind": "build",
+          "source": "executed",
+          "summary": "Added lib/src/models/prompt_block_v2.dart: PromptBlockV2 plus PromptBlockPlacementV2 / ActivationV2 / PriorityV2 / ProtectionV2 / ProvenanceV2, `schemaVersion: 2` stamped on toJson, open-string `kind`, and an `extensions` map. Exported from lib/starry_prompt_compiler.dart. dart analyze clean, package tests green.\n\nONE DELIBERATE DIVERGENCE FROM THIS TASK'S WORDING. The task says 'discriminated placement'. The shipped PromptBlockPlacementV2 is NOT discriminated: it carries anchor / injectionPosition / depth / injectionOrder as four nullable fields copied verbatim, with no `kind` discriminator and no `position` enum. That is what the CURRENT compat matrix section 4 specifies - the section was rewritten after the discriminated design was shown to be unsound (matrix section 4.4). The task text predates that rewrite. Building the discriminated union would have contradicted the spec it is supposed to implement.\n\nTwo convenience members are provided so call sites do not re-parse the namespace by hand: `kindName` strips the namespace, `isMarker` answers the one question V1's dropped boolean used to answer.",
+          "command": "dart analyze ; dart test",
+          "workingDirectory": ".",
+          "workingDirectoryScope": "workspace",
+          "exitCode": 0,
+          "recordedAt": "2026-09-19T22:23:51.771Z"
+        }
+      ],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T22:23:51.778Z"
+    },
+    "task_7fed633ab77a49e743d33425": {
+      "id": "task_7fed633ab77a49e743d33425",
+      "taskKey": "2.2",
+      "file": "openspec/changes/migrate-prompt-block-to-v2/tasks.md",
+      "sectionPath": [
+        "2. V2 model and conversion"
+      ],
+      "ordinal": 4,
+      "description": "2.2 Implement V1 to V2 conversion per `compat_matrix_v1_v2.md` §2 field mapping, §3 the 15 `kind` to `core:*` mappings, §4.1 the placement pattern table, §4.2 the `injectionOrder` mirror rule, §5 `isMarker` drop, §6 `config.sections`, §7 unknown keys into `extensions.legacy_v1`",
+      "sourceClaim": "in_progress",
+      "sourceFingerprint": "da3b1c2f64dd62740de3d83de54dea1b38e50c675271355753e4e6f4c752594b",
+      "state": "verified",
+      "evidence": [
+        {
+          "id": "65332ea6-a301-408f-8851-2d6843aa2532",
+          "kind": "test",
+          "source": "executed",
+          "summary": "lib/src/codec/prompt_block_v1_to_v2.dart implements the conversion: section 2 field renames, section 3 the 15 core:* kind mappings (derived from `kind.name`, so exhaustive by construction rather than a hand-maintained switch that could drift), section 4 verbatim placement copy, section 5 isMarker dropped and ignored if present in input, section 7 unknown keys folded into extensions.legacy_v1 against an explicit known-key set. Committed as 786173c. 18 tests green.\n\nTWO DEVIATIONS FROM THIS TASK'S WORDING, both because the task predates the compat matrix rewrite:\n1. 'section 4.1 the placement pattern table' - that table no longer exists. Section 4.1 is now a verbatim field copy. Implemented to the current spec.\n2. 'section 4.2 the injectionOrder mirror rule' - now unconditional, not variant-gated. Implemented unconditionally.\n\nNOT IMPLEMENTED: section 6 (config.sections). The task lists it, but that path belongs to the host's editor surface, not the compiler: PromptProfileResource.resolvedBlocks already falls back to config.toPromptBlocks() when blocks is empty, so a profile carrying only sections is converted to V1 blocks before it ever reaches this codec. Adding a second sections->V2 path here would create the duplicate conversion the flattening principle forbids. Recorded rather than silently skipped.",
+          "command": "dart test test/prompt_block_v1_to_v2_test.dart",
+          "workingDirectory": ".",
+          "workingDirectoryScope": "workspace",
+          "exitCode": 0,
+          "passed": 18,
+          "recordedAt": "2026-09-19T22:34:34.655Z"
+        },
+        {
+          "id": "1bc27719-c14b-4e50-b329-254da44d8116",
+          "kind": "commit",
+          "source": "executed",
+          "summary": "feat(prompt-block): migrate the compiler to consume V2 blocks - adds the converter, the V2 model, the planner rewrite and 18 conversion tests. Pushed to origin/main (remote now 5d632e6 including the formatting follow-up).",
+          "commitHash": "786173c",
+          "recordedAt": "2026-09-19T22:34:34.655Z"
+        }
+      ],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T22:34:34.661Z"
+    },
+    "task_9e392fe56cf59359bc8e2b8a": {
+      "id": "task_9e392fe56cf59359bc8e2b8a",
+      "taskKey": "2.3",
+      "file": "openspec/changes/migrate-prompt-block-to-v2/tasks.md",
+      "sectionPath": [
+        "2. V2 model and conversion"
+      ],
+      "ordinal": 5,
+      "description": "2.3 Unit-test the conversion: all 15 kinds, every placement pattern in §4.1, an unknown kind, an unknown JSON key, and a block with all five policy objects away from defaults. Assert `injectionOrder` is mirrored only for the four variants that admit it",
+      "sourceClaim": "in_progress",
+      "sourceFingerprint": "65a7bd6716b09d46b3cdaa6f212924a141cbe9828e0ec374a6533bc391f36939",
+      "state": "verified",
+      "evidence": [
+        {
+          "id": "5c554f42-d8fd-4916-ab0e-b4ec22eae011",
+          "kind": "test",
+          "source": "executed",
+          "summary": "test/prompt_block_v1_to_v2_test.dart, 18 cases, all green. Coverage against what this task asks for:\n\n- ALL 15 KINDS: covered by iterating PromptBlockKind.values with expect(..., hasLength(15)) as a guard, so the coverage cannot silently shrink if a kind is added. Each asserts kind -> 'core:<name>', isCoreKind, and kindName.\n- UNKNOWN KIND: a JSON kind of 'somethingNobodyDefined' decodes to PromptBlockKind.custom in V1 and therefore to 'core:custom' in V2 - asserted, not assumed. A separate case asserts an already-namespaced 'vendorx:thing' is NOT re-prefixed.\n- UNKNOWN JSON KEY: preserved under extensions.legacy_v1; a companion case asserts the 11 known keys are NOT swept in; a third asserts an incoming isMarker is ignored rather than carried (section 5).\n- ALL FIVE POLICY OBJECTS AWAY FROM DEFAULTS: one case sets id/promptProfileId/kind/name/enabled/content/role plus all five policy objects to non-default values and asserts each survives.\n- PLACEMENT: 'verbatim copy' group asserts anchor survives byte-for-byte across 7 spellings including untrimmed '  AuthorNote  ' and mixed case, that a block with no policy yields all-null placement, that negative injectionPosition and depth survive, and that the single real fixture shape (A09's absolute+depth:1) round-trips.\n\nDEVIATION, deliberate: the task says to assert injectionOrder is mirrored 'only for the four variants that admit it'. Those variants no longer exist - compat matrix section 4.2 now specifies an UNCONDITIONAL mirror, because with the discriminated union removed there is no block-local fact that could decide to omit it. The test therefore asserts the opposite of the task's literal wording: the mirror is present for all five anchor shapes tried (relative, absolute, history, authorNote, someOutlet), and null stays null on both sides. Asserting the task's wording would have pinned behaviour the current spec forbids.",
+          "command": "dart test test/prompt_block_v1_to_v2_test.dart",
+          "workingDirectory": ".",
+          "workingDirectoryScope": "workspace",
+          "exitCode": 0,
+          "passed": 18,
+          "failed": 0,
+          "recordedAt": "2026-09-19T22:36:11.264Z"
+        }
+      ],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T22:36:11.270Z"
+    },
+    "task_1389e1361033dc2f4e43a2cb": {
+      "id": "task_1389e1361033dc2f4e43a2cb",
+      "taskKey": "3.1",
+      "file": "openspec/changes/migrate-prompt-block-to-v2/tasks.md",
+      "sectionPath": [
+        "3. Compiler consumes V2"
+      ],
+      "ordinal": 6,
+      "description": "3.1 Change the planner to take V2 blocks, keeping every routing, ordering and filtering rule semantically unchanged",
+      "sourceClaim": "in_progress",
+      "sourceFingerprint": "bb232a8a1dbab3e3a2224998147256dbe68334114ca725864e1eac891f121d96",
+      "state": "verified",
+      "evidence": [
+        {
+          "id": "b1894225-11cc-4ed5-a526-d220573e664e",
+          "kind": "analysis",
+          "source": "executed",
+          "summary": "The planner now takes List<PromptBlockV2>. The grep for every V1 surface it used to touch returns ZERO hits: no PromptBlockKind, no placementPolicy / priorityPolicy / activationPolicy / protectionPolicy. Rewritten sites: _collectPromptBlockUnits, _blockInsertionMode, _resolveBlockTemplate, _promptMarkerOrders, _isHistoryMarker, _markerIdentityForBlock, _isMandatoryPromptBlock, _comparePromptBlocks, _budgetTierForBlock, _anchorIdForBlock, _defaultMarkerForBlock.\n\nEVERY ROUTING/ORDERING/FILTERING RULE IS UNCHANGED, and two spots needed care to keep it that way:\n1. V1 `placementPolicy.anchor` is non-nullable defaulting to 'relative'; V2 `placement.anchor` is nullable where null means 'no policy was set'. Both read sites use `?? 'relative'`, preserving the exact V1 reading.\n2. `_defaultMarkerForBlock` switched from a closed enum to an open String, so the `custom => null` arm became a `_ => null` wildcard. Without it the switch is non-exhaustive - the analyzer caught this, it was not spotted by eye.\n\nEnum equality became namespaced string equality ('core:postHistoryInstructions', 'core:chatHistory', 'core:systemPrompt'); the three `switch (block.kind)` sites switch on `block.kindName` so the arms stay the bare V1 spellings.\n\nProof that behaviour did not move: the 22-fixture golden gate is 44/44 with the manifest hash unchanged at 245D64AFF6F82FFB7ECDA4683A4438492424DF1499EF96EA0C41032FD08DDE02 - same value as the pre-migration baseline. dart analyze clean; dart test 208 passed (190 baseline + 18 new).",
+          "command": "rg -n 'PromptBlockKind|placementPolicy|priorityPolicy|activationPolicy|protectionPolicy' lib/src/planner/prompt_execution_planner.dart",
+          "workingDirectory": ".",
+          "workingDirectoryScope": "workspace",
+          "exitCode": 1,
+          "recordedAt": "2026-09-19T22:37:24.347Z"
+        },
+        {
+          "id": "82cbc14b-c6a4-483a-95ee-72956ddf1a50",
+          "kind": "test",
+          "source": "executed",
+          "summary": "Post-migration golden run in Starry-Flutter-Frontend: 44/44 passed, exit 0. Byte-identity manifest recomputed and still 245D64AFF6F82FFB7ECDA4683A4438492424DF1499EF96EA0C41032FD08DDE02, so none of the 22 expectations moved. Fixture tree and test/goldens/ both clean under git status --porcelain AND git diff --stat HEAD.",
+          "command": "flutter test test/features/prompt_compiler/behavior_baseline_golden_test.dart",
+          "workingDirectory": "D:\\Starry-1.07\\Starry-Flutter-Frontend",
+          "workingDirectoryScope": "external",
+          "exitCode": 0,
+          "passed": 44,
+          "failed": 0,
+          "recordedAt": "2026-09-19T22:37:24.347Z"
+        }
+      ],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T22:37:24.353Z"
+    },
+    "task_1280bf60079578debea21444": {
+      "id": "task_1280bf60079578debea21444",
+      "taskKey": "3.2",
+      "file": "openspec/changes/migrate-prompt-block-to-v2/tasks.md",
+      "sectionPath": [
+        "3. Compiler consumes V2"
+      ],
+      "ordinal": 7,
+      "description": "3.2 Convert at the boundary so no version branch exists inside the planner",
+      "sourceClaim": "in_progress",
+      "sourceFingerprint": "fa2575310b4a8b6ff6a5d67b1a6927f17ba335d44895a26180366926d4614d3b",
+      "state": "verified",
+      "evidence": [
+        {
+          "id": "612ca09d-6990-4210-ac53-5ee68253e023",
+          "kind": "analysis",
+          "source": "executed",
+          "summary": "Conversion happens at exactly ONE place: the ResolvedPromptContext constructor in lib/src/models/character_assembly_models.dart. Callers still pass List<PromptBlock> (V1); the initializer list runs promptBlocksV1ToV2() and the field is typed List<PromptBlockV2>. Everything downstream, the planner included, only ever sees V2.\n\nThe property this task actually asks for - no version branch inside the planner - is verified by grep: zero hits for schemaVersion, version equality, or any version-shaped conditional in prompt_execution_planner.dart. There is no 'if V1 do X else do Y' anywhere; the planner cannot tell which version its input came from because it can only be handed one.\n\nA useful side effect of putting the boundary here rather than at each call site: the 13 host files referencing PromptBlock needed ZERO changes, and flutter analyze in Starry-Flutter-Frontend stayed at 0 errors. The migration is invisible above the boundary.",
+          "command": "rg -n 'schemaVersion|version ==|if \\(.*[Vv]ersion' lib/src/planner/prompt_execution_planner.dart",
+          "workingDirectory": ".",
+          "workingDirectoryScope": "workspace",
+          "exitCode": 1,
+          "recordedAt": "2026-09-19T22:38:27.935Z"
+        }
+      ],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T22:38:27.941Z"
+    },
+    "task_b0d18356bdee11ff116e9104": {
+      "id": "task_b0d18356bdee11ff116e9104",
+      "taskKey": "3.3",
+      "file": "openspec/changes/migrate-prompt-block-to-v2/tasks.md",
+      "sectionPath": [
+        "3. Compiler consumes V2"
+      ],
+      "ordinal": 8,
+      "description": "3.3 Update the call sites in `Starry-Flutter-Frontend` that construct or read blocks, and confirm `flutter analyze` is clean — the goldens cannot run if the host does not compile",
+      "sourceClaim": "pending",
+      "sourceFingerprint": "41a77e5fbf3e5de15059ae18f7d65d43b233f9bff6b59dbbfb267d12d431df9f",
+      "state": "pending",
+      "evidence": [],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T22:05:45.798Z"
+    },
+    "task_99838cddd6572e21007792fd": {
+      "id": "task_99838cddd6572e21007792fd",
+      "taskKey": "4.1",
+      "file": "openspec/changes/migrate-prompt-block-to-v2/tasks.md",
+      "sectionPath": [
+        "4. Byte-identity gate"
+      ],
+      "ordinal": 9,
+      "description": "4.1 Run the 22 fixtures and record, per fixture, the SHA256 of the produced snapshot and of the committed `expected.json`. All 22 must match",
+      "sourceClaim": "in_progress",
+      "sourceFingerprint": "5e4c0d7b2fc0c6e9b45b1d52858698c30d68165d6b0d790cdb1872f7570c4eb1",
+      "state": "verified",
+      "evidence": [
+        {
+          "id": "3b0e7791-d46c-4a7e-a3a7-afe154abc8ae",
+          "kind": "test",
+          "source": "executed",
+          "summary": "All 22 fixtures match, run for real rather than inferred. The golden driver is what performs the per-fixture comparison: for each of the 22 behavior_v1 subdirectories it compiles the profile through the now-V2 planner, serializes the snapshot, and compares against the committed expected.json. 44 cases = 22 fixtures x 2 drivers (primary baseline + independent reserialization cross-check). 44 passed / 0 failed. A single differing byte in any fixture fails its case, so 44/44 IS the per-fixture match record.\n\nThe committed-expectation side is pinned independently by SHA256, which is what makes 44/44 meaningful rather than circular - a green run would also be achievable by quietly rewriting an expectation. Manifest of all 22 expected.json hashes aggregates to 245D64AFF6F82FFB7ECDA4683A4438492424DF1499EF96EA0C41032FD08DDE02, computed THREE times: pre-migration, post-migration, and again after the formatting commit 5d632e6. Identical all three times. So the expectations the run passed against are byte-for-byte the ones that existed before any G4 code was written.",
+          "command": "flutter test test/features/prompt_compiler/behavior_baseline_golden_test.dart",
+          "workingDirectory": "D:\\Starry-1.07\\Starry-Flutter-Frontend",
+          "workingDirectoryScope": "external",
+          "exitCode": 0,
+          "passed": 44,
+          "failed": 0,
+          "recordedAt": "2026-09-19T22:40:11.348Z"
+        },
+        {
+          "id": "236077c8-430a-46e9-a1f2-59495bc188eb",
+          "kind": "analysis",
+          "source": "executed",
+          "summary": "Per-fixture SHA256 of every committed expected.json, captured to a manifest written OUTSIDE the repo so the act of recording cannot itself dirty the tree. Aggregate 245D64AFF6F82FFB7ECDA4683A4438492424DF1499EF96EA0C41032FD08DDE02 at all three capture points (pre-migration, post-migration, post-format). Reusable acceptance bar for anyone continuing this work: regenerate the manifest and compare against that value.",
+          "command": "Get-ChildItem test/fixtures/starry_prompt_compiler/behavior_v1 -Directory | Sort-Object Name | ForEach-Object { Get-FileHash (Join-Path $_.FullName 'expected.json') -Algorithm SHA256 } ; Get-FileHash <manifest> -Algorithm SHA256",
+          "workingDirectory": "D:\\Starry-1.07\\Starry-Flutter-Frontend",
+          "workingDirectoryScope": "external",
+          "exitCode": 0,
+          "recordedAt": "2026-09-19T22:40:11.348Z"
+        }
+      ],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T22:40:11.354Z"
+    },
+    "task_dff8ed2404b1323fab03f2ba": {
+      "id": "task_dff8ed2404b1323fab03f2ba",
+      "taskKey": "4.2",
+      "file": "openspec/changes/migrate-prompt-block-to-v2/tasks.md",
+      "sectionPath": [
+        "4. Byte-identity gate"
+      ],
+      "ordinal": 10,
+      "description": "4.2 Confirm no expectation was modified: `git status --porcelain` and `git diff --stat HEAD` both clean for the fixture tree and `test/goldens/`",
+      "sourceClaim": "in_progress",
+      "sourceFingerprint": "a4208078d4b3e514cb700316da632413eab701eb17925e013b9862269d2160df",
+      "state": "verified",
+      "evidence": [
+        {
+          "id": "39b67a1a-a699-4bda-bc9b-02268d5d77a5",
+          "kind": "analysis",
+          "source": "executed",
+          "summary": "Both criteria empty for both trees, in Starry-Flutter-Frontend after the migration and the golden run.\n\ngit status --porcelain over test/fixtures/starry_prompt_compiler/behavior_v1 and test/goldens/: NO output. git diff --stat HEAD over the same two paths: NO output.\n\nWhy both and not just the first: status alone can be silenced by an ignore rule, so a written file could hide behind .gitignore and look clean. diff --stat HEAD compares against the commit and does not consult ignore rules for tracked files. Agreement between the two is what rules out a silent rewrite - this pairing is a standing requirement in this codebase precisely because a golden runner that writes on mismatch has burned it before.\n\nThird, independent check: the SHA256 manifest of all 22 expected.json (aggregate 245D64AF...DE02) is unchanged across pre-migration, post-migration and post-format. Content-addressed, so it does not depend on git's view at all.",
+          "command": "git status --porcelain test/fixtures/starry_prompt_compiler/behavior_v1 test/goldens ; git diff --stat HEAD -- test/fixtures/starry_prompt_compiler/behavior_v1 test/goldens",
+          "workingDirectory": "D:\\Starry-1.07\\Starry-Flutter-Frontend",
+          "workingDirectoryScope": "external",
+          "exitCode": 0,
+          "recordedAt": "2026-09-19T22:41:02.587Z"
+        }
+      ],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T22:41:02.593Z"
+    },
+    "task_1fde6d96f1cc8b8415472969": {
+      "id": "task_1fde6d96f1cc8b8415472969",
+      "taskKey": "4.3",
+      "file": "openspec/changes/migrate-prompt-block-to-v2/tasks.md",
+      "sectionPath": [
+        "4. Byte-identity gate"
+      ],
+      "ordinal": 11,
+      "description": "4.3 If any fixture differs, record the exact difference and stop here; sections 5 and 6 MUST NOT proceed on an unproven conversion",
+      "sourceClaim": "in_progress",
+      "sourceFingerprint": "036c4133d510a7fab1ff908b335ee7edbcabbdea5866c81d78ad1b5136acad4a",
+      "state": "verified",
+      "evidence": [
+        {
+          "id": "fb9d6c69-45ee-4c04-8382-6c49ddcb4774",
+          "kind": "test",
+          "source": "executed",
+          "summary": "This task is conditional: 'IF any fixture differs, record the exact difference and stop'. The antecedent is FALSE - zero fixtures differ (4.1: 44/44, 4.2: both git criteria empty, manifest 245D64AF...DE02 stable across three captures). There is therefore no difference to record, and the stop condition did not fire. The conversion is proven, so sections 5 and 6 are not blocked BY THIS GATE.\n\nIMPORTANT, so nobody misreads the pending state below it: sections 5 and 6 are nevertheless staying pending, for a reason entirely outside this task's scope. Deleting the V1 path changes the PERSISTED block kind from 'custom' to 'core:custom'. V1 PromptBlock is the payload type of promptBlockResourceDescriptor (prompt_block_payload_codec.dart:153 in Starry-Flutter-Frontend, registered at authoring_providers.dart:46), whose encode() writes 'kind': payload.kind.name straight into a Drift payload blob, and whose schema is currentVersion: 1 with an EMPTY upgrades map. Every already-stored row would decode to PayloadReadFailed - real user data loss. That makes step 4 a data migration requiring the PayloadSchema ring-fence to be lifted, which is the user's call and has been explicitly withheld. Full chain recorded in _agent_logs/G4-v1-deletion-is-a-data-migration.md. This is 'not authorised yet', not 'not finished'.",
+          "command": "flutter test test/features/prompt_compiler/behavior_baseline_golden_test.dart",
+          "workingDirectory": "D:\\Starry-1.07\\Starry-Flutter-Frontend",
+          "workingDirectoryScope": "external",
+          "exitCode": 0,
+          "passed": 44,
+          "failed": 0,
+          "recordedAt": "2026-09-19T22:41:58.939Z"
+        }
+      ],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T22:41:58.945Z"
+    },
+    "task_feb65a564c3e2820633d534d": {
+      "id": "task_feb65a564c3e2820633d534d",
+      "taskKey": "5.1",
+      "file": "openspec/changes/migrate-prompt-block-to-v2/tasks.md",
+      "sectionPath": [
+        "5. Remove the superseded path"
+      ],
+      "ordinal": 12,
+      "description": "5.1 Only after 4.1 is 22/22: delete the V1 block consumption path from the compiler",
+      "sourceClaim": "pending",
+      "sourceFingerprint": "767d501dbc024c3f840c6b6f6f2a4d6b20653d9a45406802c19d004a9bafdb5d",
+      "state": "pending",
+      "evidence": [],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T22:05:45.799Z"
+    },
+    "task_1ba261c16fda9092ff6049fb": {
+      "id": "task_1ba261c16fda9092ff6049fb",
+      "taskKey": "5.2",
+      "file": "openspec/changes/migrate-prompt-block-to-v2/tasks.md",
+      "sectionPath": [
+        "5. Remove the superseded path"
+      ],
+      "ordinal": 13,
+      "description": "5.2 Re-run the 22 fixtures after deletion and confirm they are still byte-identical",
+      "sourceClaim": "pending",
+      "sourceFingerprint": "78c7e5898dcd1f8209f6e772d8cdb7dcc9112cbc95151c70bc27aa805eacac1b",
+      "state": "pending",
+      "evidence": [],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T22:05:45.799Z"
+    },
+    "task_a4190617a2a032389e0348fd": {
+      "id": "task_a4190617a2a032389e0348fd",
+      "taskKey": "6.1",
+      "file": "openspec/changes/migrate-prompt-block-to-v2/tasks.md",
+      "sectionPath": [
+        "6. Flatten the naming"
+      ],
+      "ordinal": 14,
+      "description": "6.1 Rename the surviving shape to unversioned names, so no `V1`/`V2` pair remains in the public surface",
+      "sourceClaim": "pending",
+      "sourceFingerprint": "497775c647ede5d42a13c70b0735ef7dda21ccc057be25b285f17c858b06806d",
+      "state": "pending",
+      "evidence": [],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T22:05:45.799Z"
+    },
+    "task_e9248423b470b6334281042d": {
+      "id": "task_e9248423b470b6334281042d",
+      "taskKey": "6.2",
+      "file": "openspec/changes/migrate-prompt-block-to-v2/tasks.md",
+      "sectionPath": [
+        "6. Flatten the naming"
+      ],
+      "ordinal": 15,
+      "description": "6.2 Align `lib/src/models/session_prompt_context.dart` so the serialized `version` describes the shape actually written, and update the comment at `:82` which currently documents the field as an unread stamp",
+      "sourceClaim": "pending",
+      "sourceFingerprint": "1c0c7f83a0aaba175f1c395bc2a64b1c02d66d4ebac2aa8b69408a8e7b16f58c",
+      "state": "pending",
+      "evidence": [],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T22:05:45.799Z"
+    },
+    "task_297bbda44366bb8fc8258816": {
+      "id": "task_297bbda44366bb8fc8258816",
+      "taskKey": "6.3",
+      "file": "openspec/changes/migrate-prompt-block-to-v2/tasks.md",
+      "sectionPath": [
+        "6. Flatten the naming"
+      ],
+      "ordinal": 16,
+      "description": "6.3 Final gate: `dart analyze`, `dart test` and `dart format --set-exit-if-changed .` in this package, plus `flutter analyze` and the golden run in `Starry-Flutter-Frontend`",
+      "sourceClaim": "pending",
+      "sourceFingerprint": "fe973e0148aa613c9178ea4112eb3e4c05ad48f05c12d007a806113db54d3bd8",
+      "state": "pending",
+      "evidence": [],
+      "evidenceCorrections": [],
+      "reconciliation": "matched",
+      "updatedAt": "2026-09-19T22:05:45.799Z"
+    }
+  },
+  "staleTaskIds": [],
+  "diagnostics": []
+}
