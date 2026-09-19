@@ -294,11 +294,45 @@ class PromptBlockV2 {
   };
 }
 
-/// Applies the `core:` namespace to a bare kind name.
+/// The fifteen built-in kind names, bare.
 ///
-/// A string that already carries a namespace is returned untouched — that is
-/// what keeps third-party kinds from being silently reclassified. An empty
-/// input becomes `core:custom`, matching V1's `orElse` fallback.
+/// `core:` is a reserved namespace (`prompt_block_v2_schema.md` section 2), so
+/// only these fifteen may carry it. Held as bare names because both the wire
+/// format and the V1 enum spell them that way.
+const Set<String> kCorePromptBlockKindNames = <String>{
+  'systemPrompt',
+  'persona',
+  'characterDescription',
+  'characterPersonality',
+  'characterScenario',
+  'exampleMessages',
+  'worldInfo',
+  'worldInfoAfter',
+  'authorNote',
+  'postHistoryInstructions',
+  'nsfw',
+  'chatHistory',
+  'enhanceDefinitions',
+  'marker',
+  'custom',
+};
+
+/// Resolves a raw `kind` string to its V2 form.
+///
+/// Three cases, per `prompt_block_v2_schema.md` section 2 and
+/// `compat_matrix_v1_v2.md` section 3:
+///
+/// * A bare name that IS one of the fifteen built-ins gains the `core:`
+///   namespace.
+/// * A bare name that is NOT built-in normalises to `core:custom`, the routing
+///   table's default rule. It must not be minted into a `core:` kind of its
+///   own: `core:` is reserved for the built-in vocabulary, so
+///   `core:someFutureKindV9` would claim that namespace for a kind the
+///   planner's marker mapping has no arm for. This also reproduces V1, whose
+///   `firstWhere(..., orElse: () => custom)` filed an unrecognised kind as
+///   `custom`.
+/// * A string that already carries a namespace is returned untouched, which is
+///   what keeps a third-party `vendorx:thing` from being reclassified.
 String normalizePromptBlockKind(String raw) {
   final trimmed = raw.trim();
   if (trimmed.isEmpty) {
@@ -306,6 +340,9 @@ String normalizePromptBlockKind(String raw) {
   }
   if (trimmed.contains(':')) {
     return trimmed;
+  }
+  if (!kCorePromptBlockKindNames.contains(trimmed)) {
+    return '$kCorePromptBlockKindNamespace:custom';
   }
   return '$kCorePromptBlockKindNamespace:$trimmed';
 }

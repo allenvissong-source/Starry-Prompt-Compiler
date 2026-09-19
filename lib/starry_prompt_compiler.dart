@@ -23,6 +23,7 @@ export 'src/models/message_budget_candidates.dart';
 export 'src/models/message_budget_models.dart';
 export 'src/models/persona.dart';
 export 'src/models/prompt_execution_models.dart';
+export 'src/codec/prompt_block_legacy_wire.dart';
 export 'src/codec/prompt_block_v1_to_v2.dart';
 export 'src/models/prompt_block_v2.dart';
 export 'src/models/prompt_manager.dart';
