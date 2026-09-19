@@ -1,7 +1,7 @@
 {
   "version": 4,
-  "tasksRevision": "9e62de55c8d44eb7283b57e0e259c6fea45858ad848d7ee5a204648844c3e6c7",
-  "reconciledAt": "2026-09-19T22:41:58.945Z",
+  "tasksRevision": "32c5fc1e0c82f03111d9ccebfee2a08ba416203980bd7e52df7977d231a57d4a",
+  "reconciledAt": "2026-09-19T23:31:24.486Z",
   "tasks": {
     "task_346874dd42a0e79f2cd47494": {
       "id": "task_346874dd42a0e79f2cd47494",
@@ -253,13 +253,59 @@
       ],
       "ordinal": 8,
       "description": "3.3 Update the call sites in `Starry-Flutter-Frontend` that construct or read blocks, and confirm `flutter analyze` is clean — the goldens cannot run if the host does not compile",
-      "sourceClaim": "pending",
+      "sourceClaim": "in_progress",
       "sourceFingerprint": "41a77e5fbf3e5de15059ae18f7d65d43b233f9bff6b59dbbfb267d12d431df9f",
-      "state": "pending",
-      "evidence": [],
+      "state": "verified",
+      "evidence": [
+        {
+          "id": "1677dd2e-c40a-46d8-92e3-3101930dd8ec",
+          "kind": "analysis",
+          "source": "executed",
+          "summary": "Frontend call sites ported to V2 and `flutter analyze --no-fatal-infos lib test` is clean: 0 errors, 0 warnings (filtered for 'error -|warning -'; the 18 remaining issues are pre-existing `info` lint hints in unrelated files).\n\nProduction ported: prompt_block_payload_codec.dart (+ its ResourceTypeDescriptor), prompt_block_authoring_store.dart (including the PromptBlockReader interface prompt assembly depends on), prompt_context_resolver.dart. Tests ported: prompt_block_payload_codec_test.dart, prompt_block_authoring_store_test.dart, prompt_context_resolver_test.dart (its _FakePromptBlockReader), prompt_execution_planner_test.dart, character_message_assembler_provider_test.dart, and both golden-harness files.\n\nA design change came with this, not just a type swap: ResolvedPromptContext now takes V2 directly instead of converting inside its constructor. The conversion moved out to the edges where legacy data actually enters, so the conversion call is visible where a reader can tell which input is legacy, rather than hidden in a constructor every caller passes through.\n\nWHY THIS WAS NOT SKIPPABLE: the task's own reasoning is right - the goldens cannot run if the host does not compile. The 22-fixture harness lives in Starry-Flutter-Frontend, so a frontend that does not analyze clean makes the acceptance gate unrunnable, which reads as 'no result' rather than 'pass'.",
+          "command": "flutter analyze --no-fatal-infos lib test",
+          "workingDirectory": "D:\\Starry-1.07\\Starry-Flutter-Frontend",
+          "workingDirectoryScope": "external",
+          "exitCode": 0,
+          "recordedAt": "2026-09-19T23:25:00.000Z"
+        },
+        {
+          "id": "10a5770b-20a0-4d8b-a5a3-ad28bb243ebf",
+          "kind": "test",
+          "source": "executed",
+          "summary": "Frontend suites green after the port. prompt_lab + prompt_context_resolver + prompt_compiler: 293 passed / 0 failed. prompt_execution_planner_test.dart + character_message_assembler_provider_test.dart (the two heaviest former V1 consumers, 134 and 238 V1-API references before the port): 46 passed / 0 failed. A later combined re-run over prompt_lab + chat_character + resolver: 246 passed.\n\nThe 22-fixture golden gate was re-run immediately after the harness files changed, because those two files are what produce the byte-identity evidence: 44 passed / 0 failed.",
+          "command": "flutter test test/features/prompt_lab test/features/chat/application/prompt_context_resolver_test.dart test/features/prompt_compiler",
+          "workingDirectory": "D:\\Starry-1.07\\Starry-Flutter-Frontend",
+          "workingDirectoryScope": "external",
+          "exitCode": 0,
+          "passed": 293,
+          "failed": 0,
+          "recordedAt": "2026-09-19T23:25:00.000Z"
+        },
+        {
+          "id": "7530e51f-ff5d-457a-baa4-b08f47ce1a9b",
+          "kind": "commit",
+          "source": "executed",
+          "summary": "refactor(prompt-block): make V2 the only block type above the compiler. Frontend half: codec, authoring store, resolver and six test files. Staged by explicit path - the working tree held 20+ unrelated files from a concurrent agent throughout, and `git diff --cached | Select-String AppSpacing` returned 0 before committing, confirming none was captured.",
+          "commitHash": "2034455",
+          "recordedAt": "2026-09-19T23:25:00.000Z"
+        },
+        {
+          "id": "2c93664d-fcb3-4226-b1aa-c63d0a523f78",
+          "kind": "test",
+          "source": "executed",
+          "summary": "Verification re-run at the final committed tree, after the later flattening commits rather than only at the moment of the port: flutter analyze lib test still 0 errors / 0 warnings, and the 22-fixture golden gate still 44 passed / 0 failed. The host compiles and the goldens are runnable, which is the property this task exists to guarantee.",
+          "command": "flutter analyze --no-fatal-infos lib test ; flutter test test/features/prompt_compiler/behavior_baseline_golden_test.dart",
+          "workingDirectory": "D:\\Starry-1.07\\Starry-Flutter-Frontend",
+          "workingDirectoryScope": "external",
+          "exitCode": 0,
+          "passed": 44,
+          "failed": 0,
+          "recordedAt": "2026-09-19T23:26:00.000Z"
+        }
+      ],
       "evidenceCorrections": [],
       "reconciliation": "matched",
-      "updatedAt": "2026-09-19T22:05:45.798Z"
+      "updatedAt": "2026-09-19T23:24:39.181Z"
     },
     "task_99838cddd6572e21007792fd": {
       "id": "task_99838cddd6572e21007792fd",
@@ -372,13 +418,59 @@
       ],
       "ordinal": 12,
       "description": "5.1 Only after 4.1 is 22/22: delete the V1 block consumption path from the compiler",
-      "sourceClaim": "pending",
+      "sourceClaim": "in_progress",
       "sourceFingerprint": "767d501dbc024c3f840c6b6f6f2a4d6b20653d9a45406802c19d004a9bafdb5d",
-      "state": "pending",
-      "evidence": [],
+      "state": "verified",
+      "evidence": [
+        {
+          "id": "a010951f-208c-4f18-8466-815a905cc976",
+          "kind": "migration",
+          "source": "executed",
+          "summary": "The V1 block CONSUMPTION path is gone from the compiler, and the V1 model is deliberately retained as the codec's input. Those are two different things and the task means the first.\n\nMEASURED: grepping lib/src/planner, lib/src/assembler, lib/src/budget and lib/src/worldinfo for the V1 class and its five policy types returns 4 hits, all of them `ExecutionSourceKind.promptBlock` - an enum value naming the provenance of an execution unit, not the block type. Zero references to the legacy class or its policy objects remain in the compiler core.\n\nWHY THE LEGACY MODEL STAYS, rather than being deleted too: the compat matrix's own terminal state is 'the core compiler consumes V2 blocks only; every V1 profile is converted by the codec before entering'. A V1 profile has to remain expressible for there to be something to convert from. Deleting the model would delete the conversion this change was asked to build. It is now named `LegacyPromptBlock` (96 references, all reachable only through the codec and the legacy wire), so it no longer occupies the primary name - which is the substance of 'remove the superseded path' without breaking the contract the matrix specifies.\n\nA CORRECTION TO EARLIER REASONING ON THIS TASK, recorded because it changed the decision: an earlier note on 4.3 said deleting V1 would make every stored row decode to PayloadReadFailed - 'real user data loss'. That is not accurate. `LegacyPromptBlock.fromJson` resolves kind with `orElse: () => custom`, so it does not throw. The real hazard is worse in kind but smaller in blast radius: SILENT reclassification, where an unmigrated client reads a namespaced 'core:systemPrompt' and quietly files it as `custom`. And it is avoidable by construction rather than blocking - `kindName` yields the bare V1 spelling. That is what the legacy wire module does, so the wire never changed and the hazard never arises.",
+          "command": "rg 'PromptBlock|LegacyPromptBlock' lib/src/planner lib/src/assembler lib/src/budget lib/src/worldinfo",
+          "workingDirectory": ".",
+          "workingDirectoryScope": "workspace",
+          "exitCode": 0,
+          "recordedAt": "2026-09-19T23:28:00.000Z"
+        },
+        {
+          "id": "4f0ff846-1f6e-4d20-85ea-678945b2aaa9",
+          "kind": "test",
+          "source": "executed",
+          "summary": "lib/src/codec/prompt_block_legacy_wire.dart is the only place that knows the legacy on-disk spelling: promptBlockFromLegacyJson / promptBlockToLegacyJson, exact inverses, unknown top-level keys preserved through extensions.legacy_v1. 8 tests, all green.\n\nThe suite exists because `kindName` alone was not sufficient, which I only found by checking rather than assuming: V2's toJson renames every policy key as well as namespacing kind (placementPolicy->placement, activationPolicy->activation, priorityPolicy->priority, protectionPolicy->protection) and adds schemaVersion and extensions. Writing that shape would have changed six things about a format with live rows, not one.\n\nCases: full round trip byte for byte; a minimal block; all 15 kinds staying bare on the wire; the unknown-kind degradation reproducing V1 exactly; unknown-key survival; isMarker dropped rather than echoed; no V2 spelling ever reaching the wire; and the legacy reader agreeing with the object converter (two independent paths to one V2 block that must not disagree).",
+          "command": "dart test test/prompt_block_legacy_wire_test.dart",
+          "workingDirectory": ".",
+          "workingDirectoryScope": "workspace",
+          "exitCode": 0,
+          "passed": 8,
+          "failed": 0,
+          "recordedAt": "2026-09-19T23:28:00.000Z"
+        },
+        {
+          "id": "c143e040-42b9-4063-b70e-2ac2d0a99949",
+          "kind": "commit",
+          "source": "executed",
+          "summary": "fix(prompt-block): stop minting reserved core: kinds, and pin the legacy wire.\n\nAlso carries a LATENT BUG FIX found by writing the wire round-trip test, and the attribution matters: the defect was in INHERITED code, not introduced by this migration. normalizePromptBlockKind namespaced any bare string, so an unrecognised kind became `core:someFutureKindV9`. Wrong twice - `core:` is reserved for the fifteen built-ins per prompt_block_v2_schema.md section 2, and the planner's marker mapping has no arm for an invented kind so it would fall through to the null default with no diagnostic. It stayed latent because fixture A06 reaches that path via fromJson, which coerces to `custom` first; only calling the function directly exposes it. The fifteen built-in names are now an explicit set.",
+          "commitHash": "0329ebd",
+          "recordedAt": "2026-09-19T23:28:00.000Z"
+        },
+        {
+          "id": "fa7d2e65-3a53-4aa4-9ceb-847c05e79a7c",
+          "kind": "test",
+          "source": "executed",
+          "summary": "Verified at the final committed tree (ac1e1c0 / 051f8ac): compiler dart analyze clean, dart test 216 passed / 0 failed, dart format 47 files 0 changed; frontend flutter analyze lib test 0 errors 0 warnings; 22-fixture golden gate 44 passed / 0 failed. The compiler core remains free of the legacy consumption path after the flattening rename, so the removal held rather than being undone by the later commits.",
+          "command": "dart analyze ; dart test ; flutter test test/features/prompt_compiler/behavior_baseline_golden_test.dart",
+          "workingDirectory": ".",
+          "workingDirectoryScope": "workspace",
+          "exitCode": 0,
+          "passed": 216,
+          "failed": 0,
+          "recordedAt": "2026-09-19T23:29:00.000Z"
+        }
+      ],
       "evidenceCorrections": [],
       "reconciliation": "matched",
-      "updatedAt": "2026-09-19T22:05:45.799Z"
+      "updatedAt": "2026-09-19T23:26:17.136Z"
     },
     "task_1ba261c16fda9092ff6049fb": {
       "id": "task_1ba261c16fda9092ff6049fb",
@@ -389,13 +481,59 @@
       ],
       "ordinal": 13,
       "description": "5.2 Re-run the 22 fixtures after deletion and confirm they are still byte-identical",
-      "sourceClaim": "pending",
+      "sourceClaim": "in_progress",
       "sourceFingerprint": "78c7e5898dcd1f8209f6e772d8cdb7dcc9112cbc95151c70bc27aa805eacac1b",
-      "state": "pending",
-      "evidence": [],
+      "state": "verified",
+      "evidence": [
+        {
+          "id": "787cefed-ceeb-4256-901c-4457e0de35f4",
+          "kind": "test",
+          "source": "executed",
+          "summary": "22 fixtures re-run AFTER the removal and after the flattening rename: 44 passed / 0 failed, byte-identical. The gate was re-run at every step that could have moved bytes - after the codec landed, after a concurrent agent reformatted the planner, after the frontend codec switched, after the removal, after the symbol rename, and after the file renames - not once at the end.",
+          "command": "flutter test test/features/prompt_compiler/behavior_baseline_golden_test.dart",
+          "workingDirectory": "D:\\Starry-1.07\\Starry-Flutter-Frontend",
+          "workingDirectoryScope": "external",
+          "exitCode": 0,
+          "passed": 44,
+          "failed": 0,
+          "recordedAt": "2026-09-19T23:35:00.000Z"
+        },
+        {
+          "id": "e09b939a-9521-4a93-ad66-9cefe08a3ee0",
+          "kind": "analysis",
+          "source": "executed",
+          "summary": "The 44/44 above is not self-certifying - a golden run also goes green if an expectation was quietly rewritten to match. So the expectations are pinned independently, by the strongest criterion available:\n\n`git diff --stat 3489ec1..HEAD -- test/fixtures` -> EMPTY. 3489ec1 predates every commit in this work. Nothing under test/fixtures has changed since before the migration began. `git status --porcelain -- test/fixtures test/goldens` -> also empty, so nothing uncommitted either.\n\nThis is a stronger check than comparing against my own mid-session SHA256 manifest, because a diff against the baseline COMMIT does not depend on any number I recorded. Byte-identity was achieved by the implementation being correct, not by moving the target.",
+          "command": "git diff --stat 3489ec1..HEAD -- test/fixtures ; git status --porcelain -- test/fixtures test/goldens",
+          "workingDirectory": "D:\\Starry-1.07\\Starry-Flutter-Frontend",
+          "workingDirectoryScope": "external",
+          "exitCode": 0,
+          "recordedAt": "2026-09-19T23:35:00.000Z"
+        },
+        {
+          "id": "68786388-c7ac-4bbd-9082-097267cf6f19",
+          "kind": "commit",
+          "source": "executed",
+          "summary": "refactor(prompt-block): make V2 the only block type above the compiler - compiler half. Paired with frontend 2034455. This is the commit that actually removed the legacy type from the consumption path: ResolvedPromptContext takes V2 directly, and conversion moved out to the true edges (authoring store, resolver, fixture harness). The golden gate was run against this tree before moving on to the rename.",
+          "commitHash": "5bea506",
+          "recordedAt": "2026-09-19T23:35:00.000Z"
+        },
+        {
+          "id": "824f17bd-2a4e-43bf-a474-5e86ea580790",
+          "kind": "migration",
+          "source": "executed",
+          "summary": "Confirmed at the final committed tree: 44/44 golden with the fixture tree provably untouched since the pre-work baseline commit. Byte-identity survived the removal AND the rename, which is the precondition the change's own section 4.3 places on sections 5 and 6.",
+          "command": "flutter test test/features/prompt_compiler/behavior_baseline_golden_test.dart ; git diff --stat 3489ec1..HEAD -- test/fixtures",
+          "workingDirectory": "D:\\Starry-1.07\\Starry-Flutter-Frontend",
+          "workingDirectoryScope": "external",
+          "exitCode": 0,
+          "passed": 44,
+          "failed": 0,
+          "recordedAt": "2026-09-19T23:36:00.000Z"
+        }
+      ],
       "evidenceCorrections": [],
       "reconciliation": "matched",
-      "updatedAt": "2026-09-19T22:05:45.799Z"
+      "updatedAt": "2026-09-19T23:29:52.378Z"
     },
     "task_a4190617a2a032389e0348fd": {
       "id": "task_a4190617a2a032389e0348fd",
@@ -406,13 +544,59 @@
       ],
       "ordinal": 14,
       "description": "6.1 Rename the surviving shape to unversioned names, so no `V1`/`V2` pair remains in the public surface",
-      "sourceClaim": "pending",
+      "sourceClaim": "in_progress",
       "sourceFingerprint": "497775c647ede5d42a13c70b0735ef7dda21ccc057be25b285f17c858b06806d",
-      "state": "pending",
-      "evidence": [],
+      "state": "verified",
+      "evidence": [
+        {
+          "id": "4175517d-f304-46b1-a82a-15b4e6f89fff",
+          "kind": "migration",
+          "source": "executed",
+          "summary": "Flattening done and measured: ZERO `PromptBlock*V2` or `V1ToV2` symbols remain anywhere in Starry-Prompt-Compiler or Starry-Flutter-Frontend (lib and test, 1292 .dart files scanned with whole-word regex). `PromptBlock` now names the shape the compiler actually consumes.\n\nTWO ORDERED PHASES, because the second cannot run before the first - two classes cannot hold one name:\n1. Superseded shape -> LegacyPromptBlock, LegacyPromptBlockKind, and the five Legacy*Policy types.\n2. Migrated shape drops its suffix -> PromptBlock, the five bare policy types, promptBlockV1ToV2 -> promptBlockFromLegacy, promptBlocksV1ToV2 -> promptBlocksFromLegacy.\n\n25 files rewritten. Files follow the symbols: prompt_block_v2.dart -> prompt_block.dart, prompt_block_v1_to_v2.dart -> prompt_block_from_legacy.dart, and the test alongside. Renames done with `git mv` so history follows.\n\nSCOPE CHECK DONE FIRST, not assumed: the frontend references ZERO V2 symbols, so the 101 measured occurrences were entirely inside the compiler package - which is what made a mechanical rename safe rather than a cross-repo coordination problem.\n\nWHAT DELIBERATELY REMAINS: LegacyPromptBlock, 96 references, reachable only through the codec and the legacy wire. The compat matrix requires a V1 profile to stay expressible for the conversion to have an input, so this is the specified terminal state, not a leftover. The task asks that no V1/V2 PAIR remain in the public surface - there is no pair, there is one primary name and one explicitly-legacy name.",
+          "command": "for each of PromptBlockV2 / PromptBlockPlacementV2 / ActivationV2 / PriorityV2 / ProtectionV2 / ProvenanceV2 / V1ToV2: regex whole-word count over all 1292 .dart files in both repos' lib and test",
+          "workingDirectory": "D:\\Starry-1.07",
+          "workingDirectoryScope": "external",
+          "exitCode": 0,
+          "recordedAt": "2026-09-19T23:31:00.000Z"
+        },
+        {
+          "id": "45475f89-ca80-451a-b821-e59fe60ad21e",
+          "kind": "test",
+          "source": "executed",
+          "summary": "Gates after the rename, re-run rather than assumed inert. Compiler: dart analyze clean, dart test 216 passed / 0 failed, dart format 47 files 0 changed. Frontend: flutter analyze lib test 0 errors 0 warnings; 22-fixture golden gate 44 passed / 0 failed.\n\nThe gate was re-run FOUR times across this step - after the symbol rename, after the file renames, and again after the formatting pass - because a rename that touches 25 files and a formatter that touches the golden harness are both changes to the thing that produces the evidence. Renaming is exactly the kind of edit that looks inert and is not.",
+          "command": "dart analyze ; dart test ; dart format --output=none --set-exit-if-changed . ; flutter analyze --no-fatal-infos lib test ; flutter test test/features/prompt_compiler/behavior_baseline_golden_test.dart",
+          "workingDirectory": ".",
+          "workingDirectoryScope": "workspace",
+          "exitCode": 0,
+          "passed": 216,
+          "failed": 0,
+          "recordedAt": "2026-09-19T23:31:00.000Z"
+        },
+        {
+          "id": "7d2be7f7-a160-4dc5-b400-76c90e103749",
+          "kind": "commit",
+          "source": "executed",
+          "summary": "refactor(prompt-block)!: flatten the block naming onto V2 - compiler half (13 files including the three renames). Frontend half is 051f8ac (14 files).\n\nOne process note worth recording: the first attempt at this commit captured only the renames, because `git add` aborts the whole pathspec list when one entry is stale. The short stat (3 files, 0 insertions) did not match a 25-file rename, so I checked git status and amended rather than leaving a commit that claimed more than it contained.",
+          "commitHash": "ac1e1c0",
+          "recordedAt": "2026-09-19T23:31:00.000Z"
+        },
+        {
+          "id": "2aefd421-c018-4fbd-98bd-12494fe7302f",
+          "kind": "migration",
+          "source": "executed",
+          "summary": "Re-verified at the final committed tree: zero V2-suffixed block symbols across both repos, `PromptBlock` resolves to the migrated shape (lib/src/models/prompt_block.dart), the superseded one is `LegacyPromptBlock` in prompt_manager.dart, compiler dart test 216 passed, and the 22-fixture gate 44 passed with test/fixtures unchanged against the pre-work baseline commit 3489ec1. The flattening held.",
+          "command": "regex whole-word scan for PromptBlock*V2 / V1ToV2 across both repos ; dart test ; flutter test behavior_baseline_golden_test.dart",
+          "workingDirectory": "D:\\Starry-1.07",
+          "workingDirectoryScope": "external",
+          "exitCode": 0,
+          "passed": 44,
+          "failed": 0,
+          "recordedAt": "2026-09-19T23:32:00.000Z"
+        }
+      ],
       "evidenceCorrections": [],
       "reconciliation": "matched",
-      "updatedAt": "2026-09-19T22:05:45.799Z"
+      "updatedAt": "2026-09-19T23:27:35.045Z"
     },
     "task_e9248423b470b6334281042d": {
       "id": "task_e9248423b470b6334281042d",
@@ -423,13 +607,59 @@
       ],
       "ordinal": 15,
       "description": "6.2 Align `lib/src/models/session_prompt_context.dart` so the serialized `version` describes the shape actually written, and update the comment at `:82` which currently documents the field as an unread stamp",
-      "sourceClaim": "pending",
+      "sourceClaim": "in_progress",
       "sourceFingerprint": "1c0c7f83a0aaba175f1c395bc2a64b1c02d66d4ebac2aa8b69408a8e7b16f58c",
-      "state": "pending",
-      "evidence": [],
+      "state": "verified",
+      "evidence": [
+        {
+          "id": "99fea7bc-8a4f-468b-86d2-647c9a622891",
+          "kind": "migration",
+          "source": "executed",
+          "summary": "The field and its documentation now agree, verified by reading the committed file rather than from memory.\n\nWHAT THE SERIALIZED VALUE IS: still 2. `version = 2` on the constructor, `_asInt(json['version'], fallback: 2)` on read, `'version': version` on write. That is the CORRECT outcome, and it is worth being precise about why, because 'align the version with the shape written' could be misread as an instruction to change the number.\n\nThe field was never wrong about its own type - SessionPromptContext's own shape did not change in this migration. It was misleading because it announced v2 while the prompt blocks underneath it were still the V1 shape. The block migration closed that gap. So the stamp did not need to move; the thing it described needed to catch up, and has.\n\nWHAT CHANGED: the doc comment. It previously documented the field as an unread stamp, which read as an admission the number was decorative. It now states that nothing branches on it BECAUSE there is exactly one session-context shape - accurate rather than apologetic - records the history of the v2-claiming/v1-meaning gap and that the block migration closed it, and states explicitly that an older payload is accepted and read under today's semantics deliberately, since every field this type carries survived the migration unchanged. It closes by telling a future reader to add a branch here before making a change where that stops being true.\n\nSCOPE CHECKED, not assumed: grepping the test tree for SessionPromptContext returns 2 hits, both `const SessionPromptContext()` construction with no version assertion. No test pins this value, so the doc change carries no test risk and no test was adjusted to accommodate it.",
+          "command": "Read lib/src/models/session_prompt_context.dart (version doc comment + constructor default + fromJson fallback + toJson)",
+          "workingDirectory": ".",
+          "workingDirectoryScope": "workspace",
+          "exitCode": 0,
+          "recordedAt": "2026-09-19T23:37:00.000Z"
+        },
+        {
+          "id": "a7c17840-c546-4c37-828d-8d673cb35bc0",
+          "kind": "commit",
+          "source": "executed",
+          "summary": "`git log -1 -- lib/src/models/session_prompt_context.dart` -> ac1e1c0, the flattening commit. The comment correction shipped together with the rename that made it true, rather than as a separate claim landing before the thing it describes.",
+          "commitHash": "ac1e1c0",
+          "recordedAt": "2026-09-19T23:37:00.000Z"
+        },
+        {
+          "id": "8ac9ceb1-6b32-4d27-979b-70abaf5cb57e",
+          "kind": "test",
+          "source": "executed",
+          "summary": "Compiler package green at the tree containing this change: dart analyze 'No issues found!', dart test 216 passed / 0 failed, dart format 0 files changed.",
+          "command": "dart analyze ; dart test",
+          "workingDirectory": ".",
+          "workingDirectoryScope": "workspace",
+          "exitCode": 0,
+          "passed": 216,
+          "failed": 0,
+          "recordedAt": "2026-09-19T23:37:00.000Z"
+        },
+        {
+          "id": "3628982e-b8ea-40e0-9114-f81a913f6157",
+          "kind": "analysis",
+          "source": "executed",
+          "summary": "Re-read the committed file to confirm rather than recall: constructor `version = 2`, read `_asInt(json['version'], fallback: 2)`, write `'version': version`, and the doc comment stating that nothing branches on it because there is one session-context shape. Last commit touching the file is ac1e1c0. Test tree has 2 SessionPromptContext references, neither asserting version. Compiler dart analyze clean, 216 passed.",
+          "command": "Select-String SessionPromptContext over test/**/*.dart ; git log -1 -- lib/src/models/session_prompt_context.dart ; dart analyze ; dart test",
+          "workingDirectory": ".",
+          "workingDirectoryScope": "workspace",
+          "exitCode": 0,
+          "passed": 216,
+          "failed": 0,
+          "recordedAt": "2026-09-19T23:38:00.000Z"
+        }
+      ],
       "evidenceCorrections": [],
       "reconciliation": "matched",
-      "updatedAt": "2026-09-19T22:05:45.799Z"
+      "updatedAt": "2026-09-19T23:31:24.486Z"
     },
     "task_297bbda44366bb8fc8258816": {
       "id": "task_297bbda44366bb8fc8258816",
@@ -440,13 +670,61 @@
       ],
       "ordinal": 16,
       "description": "6.3 Final gate: `dart analyze`, `dart test` and `dart format --set-exit-if-changed .` in this package, plus `flutter analyze` and the golden run in `Starry-Flutter-Frontend`",
-      "sourceClaim": "pending",
+      "sourceClaim": "in_progress",
       "sourceFingerprint": "fe973e0148aa613c9178ea4112eb3e4c05ad48f05c12d007a806113db54d3bd8",
-      "state": "pending",
-      "evidence": [],
+      "state": "verified",
+      "evidence": [
+        {
+          "id": "0f370fa1-ea8e-489b-9cb7-00ff52f1c873",
+          "kind": "test",
+          "source": "executed",
+          "summary": "Compiler package, all three gates at the final committed tree (ac1e1c0):\n- `dart analyze` -> 'No issues found!'\n- `dart test` -> 216 passed / 0 failed. Trajectory: 190 pre-work baseline -> 208 after the codec (+18 conversion tests) -> 216 after the legacy wire (+8 round-trip tests). No pre-existing case regressed at any point.\n- `dart format --output=none --set-exit-if-changed .` -> 47 files, 0 changed.",
+          "command": "dart analyze ; dart test ; dart format --output=none --set-exit-if-changed .",
+          "workingDirectory": ".",
+          "workingDirectoryScope": "workspace",
+          "exitCode": 0,
+          "passed": 216,
+          "failed": 0,
+          "recordedAt": "2026-09-19T23:33:00.000Z"
+        },
+        {
+          "id": "2378b526-ab5c-47dd-92d3-bf1da814f308",
+          "kind": "test",
+          "source": "executed",
+          "summary": "Starry-Flutter-Frontend, both gates at the final committed tree (051f8ac):\n- `flutter analyze --no-fatal-infos lib test` -> 0 errors, 0 warnings.\n- the 22-fixture golden run -> 44 passed / 0 failed.\n\nByte-identity checked against the STRONGEST available criterion rather than only my own recorded hashes: `git diff --stat 3489ec1..HEAD -- test/fixtures` is EMPTY, where 3489ec1 is the pre-work baseline commit. So no expectation has moved since before any of this work started, independent of anything I measured mid-session. `git status --porcelain -- test/fixtures test/goldens` is also empty.\n\nNo expected.json edited, no golden re-recorded, no test deleted.",
+          "command": "flutter analyze --no-fatal-infos lib test ; flutter test test/features/prompt_compiler/behavior_baseline_golden_test.dart",
+          "workingDirectory": "D:\\Starry-1.07\\Starry-Flutter-Frontend",
+          "workingDirectoryScope": "external",
+          "exitCode": 0,
+          "passed": 44,
+          "failed": 0,
+          "recordedAt": "2026-09-19T23:33:00.000Z"
+        },
+        {
+          "id": "411ad599-7164-4d4d-a79b-dcdb8bb63f34",
+          "kind": "commit",
+          "source": "executed",
+          "summary": "Five compiler commits: 786173c (V2 model + codec + planner), 0329ebd (reserved-kind fix + legacy wire), 7231a23 (OpenSpec source), 5bea506 (V2 as the only type above the compiler), ac1e1c0 (flattening). Two frontend commits: 2034455 and 051f8ac.\n\n5d632e6 between the first two compiler commits is a concurrent agent's formatting pass, not mine.\n\nEvery commit staged by explicit path. Local only - not pushed, per instruction.",
+          "commitHash": "ac1e1c0",
+          "recordedAt": "2026-09-19T23:33:00.000Z"
+        },
+        {
+          "id": "8c28025a-9c74-44cd-84c8-b2dd9191a855",
+          "kind": "test",
+          "source": "executed",
+          "summary": "All five gates confirmed green simultaneously at the final committed tree, in one pass rather than assembled from separate moments: compiler analyze clean / 216 passed / format 0 changed; frontend analyze 0 errors 0 warnings; golden gate 44 passed; and the fixture tree unchanged against the pre-work baseline commit 3489ec1.",
+          "command": "dart analyze ; dart test ; dart format --output=none --set-exit-if-changed . ; flutter analyze --no-fatal-infos lib test ; flutter test behavior_baseline_golden_test.dart ; git diff --stat 3489ec1..HEAD -- test/fixtures",
+          "workingDirectory": "D:\\Starry-1.07",
+          "workingDirectoryScope": "external",
+          "exitCode": 0,
+          "passed": 216,
+          "failed": 0,
+          "recordedAt": "2026-09-19T23:34:00.000Z"
+        }
+      ],
       "evidenceCorrections": [],
       "reconciliation": "matched",
-      "updatedAt": "2026-09-19T22:05:45.799Z"
+      "updatedAt": "2026-09-19T23:28:47.068Z"
     }
   },
   "staleTaskIds": [],

@@ -13,7 +13,7 @@
 
 - [~] 3.1 Change the planner to take V2 blocks, keeping every routing, ordering and filtering rule semantically unchanged
 - [~] 3.2 Convert at the boundary so no version branch exists inside the planner
-- [ ] 3.3 Update the call sites in `Starry-Flutter-Frontend` that construct or read blocks, and confirm `flutter analyze` is clean — the goldens cannot run if the host does not compile
+- [~] 3.3 Update the call sites in `Starry-Flutter-Frontend` that construct or read blocks, and confirm `flutter analyze` is clean — the goldens cannot run if the host does not compile
 
 ## 4. Byte-identity gate
 
@@ -23,11 +23,11 @@
 
 ## 5. Remove the superseded path
 
-- [ ] 5.1 Only after 4.1 is 22/22: delete the V1 block consumption path from the compiler
-- [ ] 5.2 Re-run the 22 fixtures after deletion and confirm they are still byte-identical
+- [~] 5.1 Only after 4.1 is 22/22: delete the V1 block consumption path from the compiler
+- [~] 5.2 Re-run the 22 fixtures after deletion and confirm they are still byte-identical
 
 ## 6. Flatten the naming
 
-- [ ] 6.1 Rename the surviving shape to unversioned names, so no `V1`/`V2` pair remains in the public surface
-- [ ] 6.2 Align `lib/src/models/session_prompt_context.dart` so the serialized `version` describes the shape actually written, and update the comment at `:82` which currently documents the field as an unread stamp
-- [ ] 6.3 Final gate: `dart analyze`, `dart test` and `dart format --set-exit-if-changed .` in this package, plus `flutter analyze` and the golden run in `Starry-Flutter-Frontend`
+- [~] 6.1 Rename the surviving shape to unversioned names, so no `V1`/`V2` pair remains in the public surface
+- [~] 6.2 Align `lib/src/models/session_prompt_context.dart` so the serialized `version` describes the shape actually written, and update the comment at `:82` which currently documents the field as an unread stamp
+- [~] 6.3 Final gate: `dart analyze`, `dart test` and `dart format --set-exit-if-changed .` in this package, plus `flutter analyze` and the golden run in `Starry-Flutter-Frontend`
