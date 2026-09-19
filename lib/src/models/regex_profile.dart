@@ -129,8 +129,8 @@ class RegexProfileResource {
     'description': description,
     'settings': settings.toJson(),
     'isDefault': isDefault,
-    'createdAt': createdAt.toIso8601String(),
-    'updatedAt': updatedAt.toIso8601String(),
+    'createdAt': createdAt.toUtc().toIso8601String(),
+    'updatedAt': updatedAt.toUtc().toIso8601String(),
   };
 }
 
