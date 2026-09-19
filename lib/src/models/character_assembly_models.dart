@@ -1,4 +1,4 @@
-﻿// Package-internal model: character-turn assembly request / result / history.
+// Package-internal model: character-turn assembly request / result / history.
 //
 // Provenance: verbatim copy of
 //   lib/features/chat_character/domain/models/character_assembly_models.dart
@@ -11,6 +11,8 @@ import 'message_budget_models.dart';
 import 'world_info.dart';
 import 'prompt_execution_models.dart';
 import 'persona.dart';
+import '../codec/prompt_block_v1_to_v2.dart';
+import 'prompt_block_v2.dart';
 import 'prompt_manager.dart';
 import 'prompt_profile.dart';
 import 'regex_profile.dart';
@@ -120,8 +122,8 @@ class ResolvedPromptContext {
                    MapEntry(key, List<WorldInfoEntry>.unmodifiable(value)),
              ),
            ),
-       resolvedPromptBlocks = List<PromptBlock>.unmodifiable(
-         resolvedPromptBlocks,
+       resolvedPromptBlocks = List<PromptBlockV2>.unmodifiable(
+         promptBlocksV1ToV2(resolvedPromptBlocks),
        ),
        worldInfoCandidateIds = List<String>.unmodifiable(worldInfoCandidateIds),
        resolvedVariables = _deepFreezeMap(resolvedVariables);
@@ -129,7 +131,13 @@ class ResolvedPromptContext {
   final Character character;
   final List<WorldInfoEntry> worldInfoEntries;
   final Map<WorldInfoPosition, List<WorldInfoEntry>> groupedWorldInfoEntries;
-  final List<PromptBlock> resolvedPromptBlocks;
+  /// Prompt blocks in the V2 shape.
+  ///
+  /// This is the migration boundary: callers still hand in V1 [PromptBlock]s
+  /// and the conversion happens once, here, on construction. Everything
+  /// downstream - the planner in particular - sees only V2, so no version
+  /// branch exists inside the compiler.
+  final List<PromptBlockV2> resolvedPromptBlocks;
   final SessionPromptContext promptContext;
   final List<String> worldInfoCandidateIds;
   final String worldInfoContextText;

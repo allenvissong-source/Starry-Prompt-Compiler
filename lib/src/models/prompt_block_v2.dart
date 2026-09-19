@@ -1,0 +1,330 @@
+/// V2 prompt block shape.
+///
+/// Mirrors `docs/prompt_compiler/schema/prompt_block_v2.schema.json` and the
+/// field mapping in `docs/prompt_compiler/compat_matrix_v1_v2.md`.
+///
+/// Two properties of this shape are load-bearing and easy to erode, so they are
+/// stated here rather than left to the schema file:
+///
+/// **`kind` is an open string, not an enum.** V1's closed 15-value enum becomes
+/// `"core:<name>"`. Third-party kinds are representable without a compiler
+/// change; unknown namespaces are carried, not coerced.
+///
+/// **`placement` is a verbatim restatement of the V1 input fields, NOT a
+/// resolved insertion position.** It holds `anchor`, `injectionPosition` and
+/// `depth` exactly as V1 supplied them, including nulls. Resolution stays in
+/// `PromptExecutionPlanner._blockInsertionMode`, which needs whole-profile state
+/// (the marker-order map and the history marker's position) that no per-block
+/// value can carry. An earlier draft of the compat matrix specified a `kind`
+/// discriminator with a `before`/`after` enum computed per block; that was
+/// unsound, and §4.4 of the matrix records the measurement that showed it would
+/// have flipped placement for 45 of the corpus's 46 blocks.
+library;
+
+/// Namespace prefix applied to every kind migrated from the V1 enum.
+const String kCorePromptBlockKindNamespace = 'core';
+
+/// Serialized schema version for every block this file produces.
+const int kPromptBlockSchemaVersion = 2;
+
+/// Placement intent, carried verbatim from V1.
+///
+/// All three fields are nullable and a block that carried no `placementPolicy`
+/// in V1 produces all three as `null` — which is exactly what the planner reads
+/// when the V1 policy sits at its defaults.
+class PromptBlockPlacementV2 {
+  const PromptBlockPlacementV2({
+    this.anchor,
+    this.injectionPosition,
+    this.depth,
+    this.injectionOrder,
+  });
+
+  factory PromptBlockPlacementV2.fromJson(Map<String, dynamic> json) {
+    return PromptBlockPlacementV2(
+      anchor: _stringOrNull(json['anchor']),
+      injectionPosition: _intOrNull(json['injectionPosition']),
+      depth: _intOrNull(json['depth']),
+      injectionOrder: _intOrNull(json['injectionOrder']),
+    );
+  }
+
+  /// Copied verbatim from `placementPolicy.anchor`. Deliberately NOT
+  /// normalised: the planner trims and lower-cases at its own read site, and
+  /// normalising here would create a second, divergent notion of the same
+  /// string.
+  final String? anchor;
+
+  /// Copied verbatim from `placementPolicy.injectionPosition`.
+  final int? injectionPosition;
+
+  /// Copied verbatim from `placementPolicy.depth`.
+  final int? depth;
+
+  /// Mirror of `priority.injectionOrder`, copied unconditionally.
+  ///
+  /// The mirror is redundant-but-harmless: the planner reads the tiebreak from
+  /// `priority.injectionOrder`. Keeping it unconditional is what makes the
+  /// placement copy lossless — with the variants gone there is no block-local
+  /// fact that could decide to omit it.
+  final int? injectionOrder;
+
+  bool get isEmpty =>
+      anchor == null &&
+      injectionPosition == null &&
+      depth == null &&
+      injectionOrder == null;
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    if (anchor != null) 'anchor': anchor,
+    if (injectionPosition != null) 'injectionPosition': injectionPosition,
+    if (depth != null) 'depth': depth,
+    if (injectionOrder != null) 'injectionOrder': injectionOrder,
+  };
+}
+
+class PromptBlockActivationV2 {
+  const PromptBlockActivationV2({this.generationTriggers = const <String>[]});
+
+  factory PromptBlockActivationV2.fromJson(Map<String, dynamic> json) {
+    final raw = json['generationTriggers'];
+    return PromptBlockActivationV2(
+      generationTriggers: raw is List
+          ? raw
+                .map((item) => item.toString().trim())
+                .where((item) => item.isNotEmpty)
+                .toList(growable: false)
+          : const <String>[],
+    );
+  }
+
+  final List<String> generationTriggers;
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'generationTriggers': generationTriggers,
+  };
+}
+
+class PromptBlockPriorityV2 {
+  const PromptBlockPriorityV2({this.sortOrder = 0, this.injectionOrder});
+
+  factory PromptBlockPriorityV2.fromJson(Map<String, dynamic> json) {
+    return PromptBlockPriorityV2(
+      sortOrder: _intOrNull(json['sortOrder']) ?? 0,
+      injectionOrder: _intOrNull(json['injectionOrder']),
+    );
+  }
+
+  final int sortOrder;
+  final int? injectionOrder;
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'sortOrder': sortOrder,
+    if (injectionOrder != null) 'injectionOrder': injectionOrder,
+  };
+}
+
+class PromptBlockProtectionV2 {
+  const PromptBlockProtectionV2({
+    this.locked = false,
+    this.forbidOverride = false,
+  });
+
+  factory PromptBlockProtectionV2.fromJson(Map<String, dynamic> json) {
+    return PromptBlockProtectionV2(
+      locked: json['locked'] == true,
+      forbidOverride: json['forbidOverride'] == true,
+    );
+  }
+
+  final bool locked;
+  final bool forbidOverride;
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'locked': locked,
+    'forbidOverride': forbidOverride,
+  };
+}
+
+class PromptBlockProvenanceV2 {
+  const PromptBlockProvenanceV2({
+    this.source = 'app',
+    this.identifier,
+    this.extension = false,
+  });
+
+  factory PromptBlockProvenanceV2.fromJson(Map<String, dynamic> json) {
+    return PromptBlockProvenanceV2(
+      source: (json['source'] ?? 'app').toString(),
+      identifier: _stringOrNull(json['identifier']),
+      extension: json['extension'] == true,
+    );
+  }
+
+  final String source;
+  final String? identifier;
+  final bool extension;
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'source': source,
+    if (identifier != null) 'identifier': identifier,
+    'extension': extension,
+  };
+}
+
+/// A prompt block in the V2 shape.
+class PromptBlockV2 {
+  const PromptBlockV2({
+    required this.id,
+    required this.kind,
+    required this.name,
+    this.promptProfileId,
+    this.enabled = true,
+    this.content = '',
+    this.role,
+    this.placement = const PromptBlockPlacementV2(),
+    this.activation = const PromptBlockActivationV2(),
+    this.priority = const PromptBlockPriorityV2(),
+    this.protection = const PromptBlockProtectionV2(),
+    this.provenance = const PromptBlockProvenanceV2(),
+    this.extensions = const <String, dynamic>{},
+  });
+
+  factory PromptBlockV2.fromJson(Map<String, dynamic> json) {
+    return PromptBlockV2(
+      id: (json['id'] ?? '').toString(),
+      promptProfileId: _stringOrNull(json['promptProfileId']),
+      kind: normalizePromptBlockKind((json['kind'] ?? '').toString()),
+      name: (json['name'] ?? '').toString(),
+      enabled: json['enabled'] != false,
+      content: (json['content'] ?? '').toString(),
+      role: _stringOrNull(json['role']),
+      placement: PromptBlockPlacementV2.fromJson(_asMap(json['placement'])),
+      activation: PromptBlockActivationV2.fromJson(_asMap(json['activation'])),
+      priority: PromptBlockPriorityV2.fromJson(_asMap(json['priority'])),
+      protection: PromptBlockProtectionV2.fromJson(_asMap(json['protection'])),
+      provenance: PromptBlockProvenanceV2.fromJson(_asMap(json['provenance'])),
+      extensions: _asMap(json['extensions']),
+    );
+  }
+
+  final String id;
+  final String? promptProfileId;
+
+  /// Open string in `"<namespace>:<name>"` form. Migrated V1 kinds carry the
+  /// `core:` namespace.
+  final String kind;
+
+  final String name;
+  final bool enabled;
+  final String content;
+  final String? role;
+  final PromptBlockPlacementV2 placement;
+  final PromptBlockActivationV2 activation;
+  final PromptBlockPriorityV2 priority;
+  final PromptBlockProtectionV2 protection;
+  final PromptBlockProvenanceV2 provenance;
+
+  /// Opaque third-party payloads, keyed by namespace. The compiler never reads,
+  /// mutates, reorders or drops anything in here. Unknown V1 keys land under
+  /// the reserved `legacy_v1` namespace.
+  final Map<String, dynamic> extensions;
+
+  /// V1 exposed an `isMarker` convenience getter. V2 does not carry a boolean;
+  /// this is the one supported spelling of the question.
+  bool get isMarker => kind == '$kCorePromptBlockKindNamespace:marker';
+
+  /// Bare name with the namespace stripped, for call sites that switch on the
+  /// core vocabulary. Returns the whole string when there is no namespace.
+  String get kindName {
+    final idx = kind.indexOf(':');
+    return idx < 0 ? kind : kind.substring(idx + 1);
+  }
+
+  bool get isCoreKind =>
+      kind.startsWith('$kCorePromptBlockKindNamespace:') || !kind.contains(':');
+
+  PromptBlockV2 copyWith({
+    String? id,
+    String? kind,
+    String? name,
+    String? promptProfileId,
+    bool? enabled,
+    String? content,
+    String? role,
+    PromptBlockPlacementV2? placement,
+    PromptBlockActivationV2? activation,
+    PromptBlockPriorityV2? priority,
+    PromptBlockProtectionV2? protection,
+    PromptBlockProvenanceV2? provenance,
+    Map<String, dynamic>? extensions,
+  }) {
+    return PromptBlockV2(
+      id: id ?? this.id,
+      kind: kind ?? this.kind,
+      name: name ?? this.name,
+      promptProfileId: promptProfileId ?? this.promptProfileId,
+      enabled: enabled ?? this.enabled,
+      content: content ?? this.content,
+      role: role ?? this.role,
+      placement: placement ?? this.placement,
+      activation: activation ?? this.activation,
+      priority: priority ?? this.priority,
+      protection: protection ?? this.protection,
+      provenance: provenance ?? this.provenance,
+      extensions: extensions ?? this.extensions,
+    );
+  }
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'schemaVersion': kPromptBlockSchemaVersion,
+    'id': id,
+    if (promptProfileId != null) 'promptProfileId': promptProfileId,
+    'kind': kind,
+    'name': name,
+    'enabled': enabled,
+    'content': content,
+    if (role != null) 'role': role,
+    'placement': placement.toJson(),
+    'activation': activation.toJson(),
+    'priority': priority.toJson(),
+    'protection': protection.toJson(),
+    'provenance': provenance.toJson(),
+    if (extensions.isNotEmpty) 'extensions': extensions,
+  };
+}
+
+/// Applies the `core:` namespace to a bare kind name.
+///
+/// A string that already carries a namespace is returned untouched — that is
+/// what keeps third-party kinds from being silently reclassified. An empty
+/// input becomes `core:custom`, matching V1's `orElse` fallback.
+String normalizePromptBlockKind(String raw) {
+  final trimmed = raw.trim();
+  if (trimmed.isEmpty) {
+    return '$kCorePromptBlockKindNamespace:custom';
+  }
+  if (trimmed.contains(':')) {
+    return trimmed;
+  }
+  return '$kCorePromptBlockKindNamespace:$trimmed';
+}
+
+Map<String, dynamic> _asMap(Object? value) {
+  if (value is Map<String, dynamic>) return value;
+  if (value is Map) return Map<String, dynamic>.from(value);
+  return const <String, dynamic>{};
+}
+
+String? _stringOrNull(Object? value) {
+  if (value == null) return null;
+  final text = value.toString().trim();
+  return text.isEmpty ? null : text;
+}
+
+int? _intOrNull(Object? value) {
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  if (value is String) return int.tryParse(value.trim());
+  return null;
+}
