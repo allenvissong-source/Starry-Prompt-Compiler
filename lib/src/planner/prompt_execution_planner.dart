@@ -61,7 +61,6 @@ class PromptExecutionPlanner {
       outletMap: outletValidation.outletMap,
       budgetPlan: request.budgetPlan,
       worldInfoBudgetPlan: request.worldInfoBudgetPlan,
-      effectiveOverrides: overrideResolution.decisions,
       trace: <ExecutionTraceEntry>[
         ...filtering.trace,
         ...overrideResolution.trace,

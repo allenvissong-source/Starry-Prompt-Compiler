@@ -43,19 +43,19 @@ injection_resolver.dart:400-418` 手工构造 `PromptExecutionPlan`,跳过 `buil
   测试侧按需放行,生产代码不行。
 - 依赖保持最小:当前仅 `intl`。新增依赖需先确认它也是纯 Dart 且无平台绑定。
 
-## 2. `version` 字段不是兼容层
+## 2. `SessionPromptContext` 只有当前 V1 形态
 
-`SessionPromptContext.version` 默认写 2,但**全仓没有任何按版本分支的读取逻辑**
-—— 不同版本走的是同一套语义。
+`SessionPromptContext` 不再写入或读取开发期 `version` 字段。当前只存在一套会话提示词上下文语义；旧 JSON 中多余的 `version` 键会被 `fromJson` 自然忽略。
 
-- **不要把它当作已生效的兼容机制**,也不要据此推断"旧版本数据会被特殊处理"。
-- 真要做版本分化时,先补分支逻辑和测试,再让字段有意义;在那之前它只是元数据。
+- 不要重新引入没有行为分支的版本戳、兼容 shim 或双轨结构。
+- 只有外部契约出现真实且不可压平的多版本输入时，才应先定义差异语义与迁移测试，再讨论版本字段。
 
-## 3. `effectiveOverrides` 有生产写入方
+## 3. override 决策收敛为 trace
 
-`ExecutionOverrideDecision` / `effectiveOverrides` 容易被误判为死代码:
-**生产代码在写入**(`prompt_execution_planner.dart:63`),只是当前**读取方只有
-测试**。它是 persona override 的审计出口,不是悬空能力,不要按零引用删。
+`ExecutionOverrideDecision` 是 planner 内部计算 override 结果的中间模型。`_applyOverrides` 将这些决策转换为 `ExecutionTraceEntry`，最终 `PromptExecutionPlan` 只公开 `trace`，不再重复公开 `effectiveOverrides`。
+
+- 新增 override 类型时应继续写入 `ExecutionTraceStage.override` 的 trace。
+- 不要恢复两份表达同一决策的公共结果字段。
 
 ## 4. 验证
 

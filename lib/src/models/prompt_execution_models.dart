@@ -248,8 +248,6 @@ class PromptExecutionPlan {
     this.budgetPlan = const MessageBudgetPlan(),
     this.worldInfoBudgetPlan = const WorldInfoBudgetPlan(),
     List<CroppingTrace> croppingTrace = const <CroppingTrace>[],
-    List<ExecutionOverrideDecision> effectiveOverrides =
-        const <ExecutionOverrideDecision>[],
     List<ExecutionTraceEntry> trace = const <ExecutionTraceEntry>[],
   }) : shellSequence = List<ResolvedExecutionUnit>.unmodifiable(shellSequence),
        historySplicePoints = List<HistorySplicePoint>.unmodifiable(
@@ -263,9 +261,6 @@ class PromptExecutionPlan {
          ),
        ),
        croppingTrace = List<CroppingTrace>.unmodifiable(croppingTrace),
-       effectiveOverrides = List<ExecutionOverrideDecision>.unmodifiable(
-         effectiveOverrides,
-       ),
        trace = List<ExecutionTraceEntry>.unmodifiable(trace);
 
   final List<ResolvedExecutionUnit> shellSequence;
@@ -275,7 +270,6 @@ class PromptExecutionPlan {
   final MessageBudgetPlan budgetPlan;
   final WorldInfoBudgetPlan worldInfoBudgetPlan;
   final List<CroppingTrace> croppingTrace;
-  final List<ExecutionOverrideDecision> effectiveOverrides;
   final List<ExecutionTraceEntry> trace;
 
   PromptExecutionPlan copyWith({
@@ -286,7 +280,6 @@ class PromptExecutionPlan {
     MessageBudgetPlan? budgetPlan,
     WorldInfoBudgetPlan? worldInfoBudgetPlan,
     List<CroppingTrace>? croppingTrace,
-    List<ExecutionOverrideDecision>? effectiveOverrides,
     List<ExecutionTraceEntry>? trace,
   }) {
     return PromptExecutionPlan(
@@ -297,7 +290,6 @@ class PromptExecutionPlan {
       budgetPlan: budgetPlan ?? this.budgetPlan,
       worldInfoBudgetPlan: worldInfoBudgetPlan ?? this.worldInfoBudgetPlan,
       croppingTrace: croppingTrace ?? this.croppingTrace,
-      effectiveOverrides: effectiveOverrides ?? this.effectiveOverrides,
       trace: trace ?? this.trace,
     );
   }

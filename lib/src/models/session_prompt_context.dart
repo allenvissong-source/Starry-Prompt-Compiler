@@ -79,23 +79,7 @@ class AuthorNotePolicy {
 }
 
 class SessionPromptContext {
-  /// [version] is written on every `toJson` and defaults to 2 when absent.
-  ///
-  /// Nothing branches on it, and that is now accurate rather than misleading:
-  /// there is exactly one session-context shape, so there is nothing to branch
-  /// between. The stamp says 2 because 2 is what this package writes and reads.
-  ///
-  /// It used to be a claim the code did not honour -- the field announced v2
-  /// while the prompt blocks underneath it were still the v1 shape. The block
-  /// migration closed that gap, so the number and the semantics now agree.
-  ///
-  /// A genuinely older payload is still accepted and read under today's
-  /// semantics rather than rejected or migrated. That is deliberate: every
-  /// field this type carries has survived the migration unchanged, so an older
-  /// payload means the same thing it always did. Add a branch here before
-  /// making a change where that stops being true.
   const SessionPromptContext({
-    this.version = 2,
     this.personaId,
     this.contextProfileId,
     this.regexProfileId,
@@ -125,7 +109,6 @@ class SessionPromptContext {
         ? updatedAtValue
         : int.tryParse((updatedAtValue ?? '').toString());
     return SessionPromptContext(
-      version: _asInt(json['version'], fallback: 2),
       personaId: _normalizedId(json['persona_id']),
       contextProfileId: _normalizedId(json['context_profile_id']),
       regexProfileId: _normalizedId(json['regex_profile_id']),
@@ -148,7 +131,6 @@ class SessionPromptContext {
   }
   static const Object _unset = Object();
 
-  final int version;
   final String? personaId;
   final String? contextProfileId;
   final String? regexProfileId;
@@ -166,7 +148,6 @@ class SessionPromptContext {
   bool get authorNoteEnabled => authorNotePolicy.enabled;
 
   SessionPromptContext copyWith({
-    int? version,
     Object? personaId = _unset,
     Object? contextProfileId = _unset,
     Object? regexProfileId = _unset,
@@ -197,7 +178,6 @@ class SessionPromptContext {
           )
         : authorNotePolicy as AuthorNotePolicy;
     return SessionPromptContext(
-      version: version ?? this.version,
       personaId: identical(personaId, _unset)
           ? this.personaId
           : personaId as String?,
@@ -222,7 +202,6 @@ class SessionPromptContext {
   }
 
   Map<String, dynamic> toJson() => {
-    'version': version,
     if (personaId != null) 'persona_id': personaId,
     if (contextProfileId != null) 'context_profile_id': contextProfileId,
     if (regexProfileId != null) 'regex_profile_id': regexProfileId,
@@ -245,12 +224,6 @@ class SessionPromptContext {
   static String? _normalizedId(Object? value) {
     final normalized = (value ?? '').toString().trim();
     return normalized.isEmpty ? null : normalized;
-  }
-
-  static int _asInt(Object? value, {required int fallback}) {
-    if (value is int) return value;
-    if (value is num) return value.round();
-    return int.tryParse((value ?? '').toString()) ?? fallback;
   }
 
   static Map<String, dynamic> _overlayToJson(PromptDisableOverlay overlay) => {
