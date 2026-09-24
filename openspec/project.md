@@ -5,7 +5,7 @@ Pure Dart package that compiles character, persona and worldbook material into p
 ## Boundary
 
 - Owns prompt assembly, worldbook recall (including BM25 ranking) and prompt profile models.
-- Consumed by `Starry-Flutter-Frontend` and by `starry_injection_service`.
+- Consumed by `starry` and by `starry_injection_service`.
 - Contains no Flutter dependency and must stay platform-agnostic.
 
 ## Conventions

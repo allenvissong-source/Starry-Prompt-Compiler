@@ -131,5 +131,5 @@ Consume it as a git dependency:
 dependencies:
   starry_prompt_compiler:
     git:
-      url: git@github.com:allenvissong-source/Starry-Prompt-Compiler.git
+      url: git@github.com:allenvissong-source/starry_prompt_compiler.git
 ```

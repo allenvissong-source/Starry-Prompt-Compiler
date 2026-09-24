@@ -20,7 +20,7 @@ starry_prompt_compiler          ← 本包,不依赖任何兄弟仓
 → `buildFromExecutionPlan`(`assembler/character_message_assembler_pure.dart:71`)。
 新增能力要落进这三步中的某一步,不要在旁边另开一条装配路径。
 
-主应用走完整三段(`Starry-Flutter-Frontend/lib/features/chat_character/
+主应用走完整三段(`starry/lib/features/chat_character/
 presentation/providers/character_message_assembler_provider.dart:83/89/108`)。
 
 **已知的生产旁路**:`starry_injection_service/lib/src/application/
@@ -73,7 +73,7 @@ dart format --set-exit-if-changed .
 `dart format` 步骤,兄弟包只被 checkout 到 `__siblings/` 供 `pub get` 解析),
 格式回潮不会被自动拦住,提交前自己跑。
 
-改动影响上层时,回主工程 `D:\Starry-1.07\Starry-Flutter-Frontend` 跑
+改动影响上层时,回主工程 `D:\Starry-1.07\starry` 跑
 `flutter analyze` 与 `flutter test`——本包全绿不代表上层能编译。
 
 ## 5. 约定
